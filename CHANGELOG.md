@@ -1,6 +1,13 @@
 # Changelog
 
-## 1.0.0 - Unreleased
+## 0.1.1 - 2026-06-17
+
+- Moved approved-folder SVG scanning and Finder icon generation off the main app thread.
+- Added scan cancellation, throttling, and batch limits so large folders do not freeze SVGlance.
+- Reduced generated Finder icon size for faster icon updates.
+- Polished landing page background, app icon contrast, social links, and before/after comparison.
+
+## 0.1.0 - 2026-06-17
 
 - Initial public release preparation.
 - Added SVG viewer with checkerboard background, scaling, zoom, rotation, reset, and transparent PNG export.

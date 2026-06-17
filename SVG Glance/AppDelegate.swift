@@ -54,6 +54,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var aboutWindow: NSWindowController?
     private var folderWatchers: [String: SVGlanceFolderWatcher] = [:]
     private var pendingFolderScans: [String: DispatchWorkItem] = [:]
+    private var currentIconScan: SVGlanceIconScanCancellation?
+    private let iconProcessingQueue = DispatchQueue(label: "com.svglance.icon-processing", qos: .utility)
+
+    private enum ScanLimit {
+        static let maxEntriesPerFolder = 25_000
+        static let maxSVGsPerFolder = 600
+        static let maxManualSVGs = 1_000
+        static let watcherDebounceSeconds = 2.0
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -93,7 +102,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         DispatchQueue.main.async { [weak self] in
             self?.showFirstRunFolderOnboardingIfNeeded()
-            self?.rescanApprovedFolders(trigger: .launch)
             self?.refreshWatchedFolders()
         }
     }
@@ -139,9 +147,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        withSecurityScopedAccess(to: panel.urls) {
-            applyFinderIcons(to: collectSVGFiles(from: panel.urls))
-        }
+        applyFinderIcons(from: panel.urls)
     }
 
     private func chooseSVGsForIconClearing() {
@@ -154,9 +160,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        withSecurityScopedAccess(to: panel.urls) {
-            clearFinderIcons(for: collectSVGFiles(from: panel.urls))
-        }
+        clearFinderIcons(from: panel.urls)
     }
 
     private func showFirstRunFolderOnboardingIfNeeded() {
@@ -236,7 +240,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         refreshWatchedFolders()
 
         if scanImmediately {
-            rescanApprovedFolders(trigger: .manual)
+            rescanApprovedFolders(trigger: .approval)
         } else if approvedCount > 0 {
             appState.statusText = "Approved \(approvedCount) folder\(approvedCount == 1 ? "" : "s")."
         }
@@ -358,59 +362,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appState.statusText = "Opened \(url.lastPathComponent) in SVGlance."
     }
 
-    private func applyFinderIcons(to urls: [URL]) {
-        guard !urls.isEmpty else {
-            appState.statusText = "No SVG files were selected."
-            return
+    private func applyFinderIcons(from urls: [URL]) {
+        processSelectedSVGs(from: urls, actionName: "Applied") { url in
+            SVGIconRenderer.applyIcon(to: url, size: 512)
         }
-
-        var successes = 0
-        var failures = 0
-        for url in urls {
-            let didAccess = url.startAccessingSecurityScopedResource()
-            if SVGIconRenderer.applyIcon(to: url) {
-                successes += 1
-            } else {
-                failures += 1
-            }
-            if didAccess {
-                url.stopAccessingSecurityScopedResource()
-            }
-        }
-
-        appState.statusText = failures == 0
-            ? "Applied visible Finder icons to \(successes) SVG file\(successes == 1 ? "" : "s")."
-            : "Applied \(successes) icon\(successes == 1 ? "" : "s"); \(failures) failed."
     }
 
-    private func clearFinderIcons(for urls: [URL]) {
-        guard !urls.isEmpty else {
-            appState.statusText = "No SVG files were selected."
-            return
+    private func clearFinderIcons(from urls: [URL]) {
+        processSelectedSVGs(from: urls, actionName: "Cleared") { url in
+            SVGIconRenderer.clearIcon(for: url)
         }
-
-        var successes = 0
-        var failures = 0
-        for url in urls {
-            let didAccess = url.startAccessingSecurityScopedResource()
-            if SVGIconRenderer.clearIcon(for: url) {
-                successes += 1
-            } else {
-                failures += 1
-            }
-            if didAccess {
-                url.stopAccessingSecurityScopedResource()
-            }
-        }
-
-        appState.statusText = failures == 0
-            ? "Cleared custom Finder icons from \(successes) SVG file\(successes == 1 ? "" : "s")."
-            : "Cleared \(successes) icon\(successes == 1 ? "" : "s"); \(failures) failed."
     }
 
     private enum FolderScanTrigger {
-        case launch
+        case approval
         case manual
+        case watcher
     }
 
     private func rescanApprovedFolders(trigger: FolderScanTrigger) {
@@ -422,28 +389,65 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        var totalFiles = 0
-        var totalSuccesses = 0
+        let cancellation = startNewIconScan()
+        let folderNames = folders.map(\.lastPathComponent).joined(separator: ", ")
+        appState.statusText = "Scanning \(folderNames) in the background..."
 
-        for folder in folders {
-            SVGlanceViewerFolderAccess.performWithAccess(to: folder) {
-                let files = svgFiles(in: folder)
-                totalFiles += files.count
+        iconProcessingQueue.async { [weak self] in
+            guard let self else {
+                return
+            }
 
-                for url in files where SVGIconRenderer.applyIcon(to: url) {
-                    totalSuccesses += 1
+            var totalFiles = 0
+            var totalSuccesses = 0
+            var didHitLimit = false
+
+            for folder in folders {
+                if cancellation.isCancelled {
+                    return
+                }
+
+                SVGlanceViewerFolderAccess.performWithAccess(to: folder) {
+                    let scan = self.svgFiles(
+                        in: folder,
+                        maxEntries: ScanLimit.maxEntriesPerFolder,
+                        maxSVGs: ScanLimit.maxSVGsPerFolder,
+                        cancellation: cancellation
+                    )
+                    totalFiles += scan.urls.count
+                    didHitLimit = didHitLimit || scan.didHitEntryLimit || scan.didHitFileLimit
+
+                    for url in scan.urls {
+                        if cancellation.isCancelled {
+                            return
+                        }
+
+                        autoreleasepool {
+                            if SVGIconRenderer.applyIcon(to: url, size: 512) {
+                                totalSuccesses += 1
+                            }
+                        }
+                    }
                 }
             }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.currentIconScan === cancellation, !cancellation.isCancelled else {
+                    return
+                }
+
+                self.currentIconScan = nil
+                self.refreshApprovedFolderStatus()
+
+                if totalFiles == 0 {
+                    self.appState.statusText = "No SVG files found in approved folders."
+                    return
+                }
+
+                let limitNote = didHitLimit ? " Scan was capped to keep SVGlance responsive; use Rescan to continue later." : ""
+                self.appState.statusText = "Updated \(totalSuccesses) of \(totalFiles) SVG Finder icon\(totalFiles == 1 ? "" : "s").\(limitNote)"
+            }
         }
-
-        refreshApprovedFolderStatus()
-
-        if totalFiles == 0 {
-            appState.statusText = "No SVG files found in approved folders."
-            return
-        }
-
-        appState.statusText = "Updated \(totalSuccesses) of \(totalFiles) SVG Finder icon\(totalFiles == 1 ? "" : "s")."
     }
 
     private func refreshApprovedFolderStatus() {
@@ -495,7 +499,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
 
             if isDirectory.boolValue {
-                results.append(contentsOf: svgFiles(in: url))
+                let scan = svgFiles(
+                    in: url,
+                    maxEntries: ScanLimit.maxEntriesPerFolder,
+                    maxSVGs: ScanLimit.maxManualSVGs
+                )
+                results.append(contentsOf: scan.urls)
             } else if url.pathExtension.lowercased() == "svg" {
                 results.append(url)
             }
@@ -504,7 +513,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return Array(Set(results)).sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
     }
 
-    private func withSecurityScopedAccess(to urls: [URL], operation: () -> Void) {
+    private func withSecurityScopedAccess<T>(to urls: [URL], operation: () -> T) -> T {
         let accessedURLs = urls.filter { $0.startAccessingSecurityScopedResource() }
         defer {
             for url in accessedURLs {
@@ -512,24 +521,135 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
-        operation()
+        return operation()
     }
 
-    private func svgFiles(in folder: URL) -> [URL] {
+    private func processSelectedSVGs(from urls: [URL], actionName: String, operation: @escaping (URL) -> Bool) {
+        let cancellation = startNewIconScan()
+        appState.statusText = "\(actionName) SVG icons in the background..."
+
+        iconProcessingQueue.async { [weak self] in
+            guard let self else {
+                return
+            }
+
+            let files: [URL] = withSecurityScopedAccess(to: urls) {
+                self.collectSVGFiles(from: urls)
+            }
+
+            guard !files.isEmpty else {
+                DispatchQueue.main.async { [weak self] in
+                    guard self?.currentIconScan === cancellation else {
+                        return
+                    }
+                    self?.currentIconScan = nil
+                    self?.appState.statusText = "No SVG files were selected."
+                }
+                return
+            }
+
+            var successes = 0
+            var failures = 0
+
+            for url in files {
+                if cancellation.isCancelled {
+                    return
+                }
+
+                let didAccess = url.startAccessingSecurityScopedResource()
+                autoreleasepool {
+                    if operation(url) {
+                        successes += 1
+                    } else {
+                        failures += 1
+                    }
+                }
+                if didAccess {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.currentIconScan === cancellation, !cancellation.isCancelled else {
+                    return
+                }
+
+                self.currentIconScan = nil
+                self.appState.statusText = failures == 0
+                    ? "\(actionName) visible Finder icons for \(successes) SVG file\(successes == 1 ? "" : "s")."
+                    : "\(actionName) \(successes) icon\(successes == 1 ? "" : "s"); \(failures) failed."
+            }
+        }
+    }
+
+    private func startNewIconScan() -> SVGlanceIconScanCancellation {
+        currentIconScan?.cancel()
+        let cancellation = SVGlanceIconScanCancellation()
+        currentIconScan = cancellation
+        return cancellation
+    }
+
+    private struct SVGFolderScan {
+        let urls: [URL]
+        let didHitEntryLimit: Bool
+        let didHitFileLimit: Bool
+    }
+
+    private func svgFiles(
+        in folder: URL,
+        maxEntries: Int = .max,
+        maxSVGs: Int = .max,
+        cancellation: SVGlanceIconScanCancellation? = nil
+    ) -> SVGFolderScan {
         guard let enumerator = FileManager.default.enumerator(
             at: folder,
-            includingPropertiesForKeys: [.isRegularFileKey],
+            includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey, .isPackageKey],
             options: [.skipsHiddenFiles, .skipsPackageDescendants]
         ) else {
-            return []
+            return SVGFolderScan(urls: [], didHitEntryLimit: false, didHitFileLimit: false)
         }
 
-        return enumerator.compactMap { item in
-            guard let url = item as? URL, url.pathExtension.lowercased() == "svg" else {
-                return nil
+        var results: [URL] = []
+        var scannedEntries = 0
+        var didHitEntryLimit = false
+        var didHitFileLimit = false
+
+        for item in enumerator {
+            if cancellation?.isCancelled == true {
+                break
             }
-            return url
+
+            scannedEntries += 1
+            if scannedEntries > maxEntries {
+                didHitEntryLimit = true
+                break
+            }
+
+            guard let url = item as? URL else {
+                continue
+            }
+
+            if let values = try? url.resourceValues(forKeys: [.isPackageKey]),
+               values.isPackage == true {
+                enumerator.skipDescendants()
+                continue
+            }
+
+            guard url.pathExtension.lowercased() == "svg" else {
+                continue
+            }
+
+            results.append(url)
+            if results.count >= maxSVGs {
+                didHitFileLimit = true
+                break
+            }
         }
+
+        let sorted = Array(Set(results)).sorted {
+            $0.path.localizedStandardCompare($1.path) == .orderedAscending
+        }
+        return SVGFolderScan(urls: sorted, didHitEntryLimit: didHitEntryLimit, didHitFileLimit: didHitFileLimit)
     }
 
     private func registerSVGViewerHandlers() {
@@ -571,7 +691,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
             if watcher.start() {
                 folderWatchers[path] = watcher
-                scheduleIconRefresh(for: folder)
             }
         }
     }
@@ -598,28 +717,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.refreshIcons(in: folder)
         }
         pendingFolderScans[path] = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8, execute: workItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + ScanLimit.watcherDebounceSeconds, execute: workItem)
     }
 
     private func refreshIcons(in folder: URL) {
         let path = folder.standardizedFileURL.path
         pendingFolderScans[path] = nil
 
-        SVGlanceViewerFolderAccess.performWithAccess(to: folder) {
-            let files = svgFiles(in: folder)
-            guard !files.isEmpty else {
-                return
-            }
-
-            var successes = 0
-            for url in files where SVGIconRenderer.applyIcon(to: url) {
-                successes += 1
-            }
-
-            if successes > 0 {
-                appState.statusText = "Updated visible Finder icons in \(folder.lastPathComponent)."
-            }
-        }
+        rescanApprovedFolders(trigger: .watcher)
     }
 }
 
@@ -700,5 +805,22 @@ private final class SVGlanceFolderWatcher {
     func stop() {
         source?.cancel()
         source = nil
+    }
+}
+
+private final class SVGlanceIconScanCancellation {
+    private let lock = NSLock()
+    private var cancelled = false
+
+    var isCancelled: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return cancelled
+    }
+
+    func cancel() {
+        lock.lock()
+        cancelled = true
+        lock.unlock()
     }
 }

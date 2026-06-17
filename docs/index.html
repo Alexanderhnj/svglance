@@ -16,10 +16,11 @@
       --soft-ink: #3b3f46;
       --muted: #6b717b;
       --line: rgba(20, 21, 24, 0.12);
-      --glass: rgba(255, 255, 255, 0.82);
-      --glass-strong: rgba(255, 255, 255, 0.94);
-      --accent: #ff9734;
-      --accent-dark: #d66700;
+      --glass: rgba(255, 255, 255, 0.9);
+      --glass-strong: rgba(255, 255, 255, 0.96);
+      --accent: #e97d22;
+      --checker-light: #d7d7d7;
+      --checker-dark: #adadad;
     }
 
     * {
@@ -35,12 +36,14 @@
       min-height: 100vh;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
       color: var(--ink);
-      background:
-        linear-gradient(45deg, #c8c8c8 25%, transparent 25%) 0 0 / 40px 40px,
-        linear-gradient(45deg, transparent 75%, #c8c8c8 75%) 0 0 / 40px 40px,
-        linear-gradient(45deg, transparent 75%, #a0a0a0 75%) 20px 20px / 40px 40px,
-        linear-gradient(45deg, #a0a0a0 25%, transparent 25%) 20px 20px / 40px 40px,
-        #b5b5b5;
+      background-color: var(--checker-light);
+      background-image: conic-gradient(
+        var(--checker-light) 25%,
+        var(--checker-dark) 0 50%,
+        var(--checker-light) 0 75%,
+        var(--checker-dark) 0
+      );
+      background-size: 44px 44px;
     }
 
     body::before {
@@ -49,8 +52,8 @@
       inset: 0;
       pointer-events: none;
       background:
-        radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.78), transparent 30%),
-        radial-gradient(circle at 74% 78%, rgba(255, 151, 52, 0.28), transparent 34%);
+        radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.64), transparent 32%),
+        radial-gradient(circle at 76% 84%, rgba(233, 125, 34, 0.24), transparent 34%);
     }
 
     main {
@@ -62,18 +65,18 @@
     }
 
     .page {
-      width: min(1060px, 100%);
-      min-height: min(670px, calc(100vh - 44px));
+      width: min(1120px, 100%);
+      min-height: min(720px, calc(100vh - 44px));
       display: grid;
       grid-template-columns: minmax(0, 1fr) 330px;
       gap: clamp(30px, 5vw, 64px);
       align-items: center;
-      padding: clamp(30px, 6vw, 78px);
-      border: 1px solid rgba(255, 255, 255, 0.62);
+      padding: clamp(30px, 5vw, 72px);
+      border: 1px solid rgba(255, 255, 255, 0.72);
       border-radius: 30px;
       background: var(--glass);
-      box-shadow: 0 34px 100px rgba(0, 0, 0, 0.24);
-      backdrop-filter: blur(22px);
+      box-shadow: 0 34px 100px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.64);
+      backdrop-filter: blur(24px);
     }
 
     .eyebrow {
@@ -95,12 +98,12 @@
       height: 8px;
       border-radius: 50%;
       background: var(--accent);
-      box-shadow: 0 0 0 4px rgba(255, 151, 52, 0.18);
+      box-shadow: 0 0 0 4px rgba(233, 125, 34, 0.18);
     }
 
     h1 {
       margin: 28px 0 0;
-      font-size: clamp(56px, 9vw, 112px);
+      font-size: clamp(54px, 8.6vw, 108px);
       line-height: 0.9;
       letter-spacing: 0;
     }
@@ -130,18 +133,22 @@
       min-height: 48px;
       align-items: center;
       justify-content: center;
-      gap: 9px;
       padding: 0 18px;
       border-radius: 9px;
       border: 1px solid transparent;
       font-weight: 750;
       white-space: nowrap;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .button:active {
+      transform: translateY(1px);
     }
 
     .primary {
       color: white;
       background: var(--ink);
-      box-shadow: 0 12px 24px rgba(20, 21, 24, 0.22);
+      box-shadow: 0 12px 24px rgba(20, 21, 24, 0.2);
     }
 
     .secondary {
@@ -150,10 +157,22 @@
       border-color: var(--line);
     }
 
+    .social-block {
+      margin-top: 22px;
+    }
+
+    .social-label {
+      margin: 0 0 7px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .links {
       display: flex;
       gap: 14px;
-      margin-top: 24px;
       color: var(--muted);
       font-size: 14px;
       font-weight: 650;
@@ -161,6 +180,141 @@
 
     .links a {
       border-bottom: 1px solid rgba(107, 113, 123, 0.42);
+    }
+
+    .comparison {
+      --split: 50%;
+      width: min(620px, 100%);
+      margin-top: 30px;
+    }
+
+    .comparison-shell {
+      position: relative;
+      overflow: hidden;
+      min-height: 190px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #f4f1ed;
+      box-shadow: 0 16px 38px rgba(20, 21, 24, 0.12);
+    }
+
+    .finder {
+      position: absolute;
+      inset: 0;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(64px, 1fr));
+      gap: 14px;
+    }
+
+    .after {
+      clip-path: inset(0 0 0 var(--split));
+      background-color: var(--checker-light);
+      background-image: conic-gradient(
+        var(--checker-light) 25%,
+        var(--checker-dark) 0 50%,
+        var(--checker-light) 0 75%,
+        var(--checker-dark) 0
+      );
+      background-size: 28px 28px;
+    }
+
+    .file {
+      display: grid;
+      justify-items: center;
+      align-content: start;
+      gap: 7px;
+      min-width: 0;
+      color: #262b32;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .thumb {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: #ffffff;
+      box-shadow: 0 4px 10px rgba(20, 21, 24, 0.12);
+    }
+
+    .after .thumb {
+      background-color: var(--checker-light);
+      background-image: conic-gradient(
+        var(--checker-light) 25%,
+        var(--checker-dark) 0 50%,
+        var(--checker-light) 0 75%,
+        var(--checker-dark) 0
+      );
+      background-size: 18px 18px;
+    }
+
+    .bubble {
+      width: 38px;
+      height: 30px;
+      position: relative;
+      border-radius: 18px 18px 18px 5px;
+      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.18));
+    }
+
+    .bubble::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      bottom: -7px;
+      width: 13px;
+      height: 13px;
+      border-radius: 0 0 0 10px;
+      background: inherit;
+      transform: skewY(-28deg);
+    }
+
+    .white-svg {
+      background: white;
+    }
+
+    .blue-svg {
+      background: #233dff;
+    }
+
+    .black-svg {
+      background: #111317;
+    }
+
+    .orange-svg {
+      background: #fb8c1f;
+    }
+
+    .split-line {
+      position: absolute;
+      inset-block: 0;
+      left: var(--split);
+      width: 2px;
+      transform: translateX(-1px);
+      background: rgba(20, 21, 24, 0.72);
+      pointer-events: none;
+    }
+
+    .split-line::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--glass-strong);
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 20px rgba(20, 21, 24, 0.2);
+    }
+
+    .slider {
+      width: 100%;
+      margin-top: 12px;
+      accent-color: var(--ink);
     }
 
     .device {
@@ -176,12 +330,9 @@
       place-items: center;
       border-radius: 52px;
       background:
-        linear-gradient(45deg, #c8c8c8 25%, transparent 25%) 0 0 / 44px 44px,
-        linear-gradient(45deg, transparent 75%, #c8c8c8 75%) 0 0 / 44px 44px,
-        linear-gradient(45deg, transparent 75%, #a0a0a0 75%) 22px 22px / 44px 44px,
-        linear-gradient(45deg, #a0a0a0 25%, transparent 25%) 22px 22px / 44px 44px,
-        #b3b3b3;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.66), 0 24px 48px rgba(0, 0, 0, 0.22);
+        radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.72), transparent 38%),
+        linear-gradient(145deg, #fff7ed, #e8ded2);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 24px 48px rgba(0, 0, 0, 0.2);
     }
 
     .mark {
@@ -205,10 +356,10 @@
     }
 
     .caption strong {
-      color: var(--accent-dark);
+      color: var(--accent);
     }
 
-    @media (max-width: 780px) {
+    @media (max-width: 860px) {
       main {
         padding: 14px;
       }
@@ -236,6 +387,10 @@
       .button {
         width: 100%;
       }
+
+      .finder {
+        grid-template-columns: repeat(2, minmax(80px, 1fr));
+      }
     }
   </style>
 </head>
@@ -250,11 +405,35 @@
           <a class="button primary" href="https://github.com/Alexanderhnj/svglance/releases/latest/download/SVGlance.dmg">Download DMG</a>
           <a class="button secondary" href="https://github.com/Alexanderhnj/svglance">Source code</a>
         </div>
-        <nav class="links" aria-label="Social links">
-          <a href="https://github.com/Alexanderhnj">GitHub</a>
-          <a href="https://x.com/TheDevDesign">X</a>
-          <a href="https://github.com/Alexanderhnj/svglance/blob/main/PRIVACY.md">Privacy</a>
-        </nav>
+        <div class="social-block">
+          <p class="social-label">Follow the project</p>
+          <nav class="links" aria-label="Social links">
+            <a href="https://github.com/Alexanderhnj">GitHub</a>
+            <a href="https://x.com/TheDevDesign">X</a>
+            <a href="https://github.com/Alexanderhnj/svglance/blob/main/PRIVACY.md">Privacy</a>
+          </nav>
+        </div>
+        <div class="comparison" id="comparison">
+          <div class="comparison-shell" aria-hidden="true">
+            <div class="finder before">
+              <div class="file"><span class="thumb"><span class="bubble white-svg"></span></span><span>white.svg</span></div>
+              <div class="file"><span class="thumb"><span class="bubble blue-svg"></span></span><span>blue.svg</span></div>
+              <div class="file"><span class="thumb"><span class="bubble black-svg"></span></span><span>black.svg</span></div>
+              <div class="file"><span class="thumb"><span class="bubble orange-svg"></span></span><span>color.svg</span></div>
+            </div>
+            <div class="finder after">
+              <div class="file"><span class="thumb"><span class="bubble white-svg"></span></span><span>white.svg</span></div>
+              <div class="file"><span class="thumb"><span class="bubble blue-svg"></span></span><span>blue.svg</span></div>
+              <div class="file"><span class="thumb"><span class="bubble black-svg"></span></span><span>black.svg</span></div>
+              <div class="file"><span class="thumb"><span class="bubble orange-svg"></span></span><span>color.svg</span></div>
+            </div>
+            <span class="split-line"></span>
+          </div>
+          <label>
+            <span class="social-label">Before and after</span>
+            <input class="slider" type="range" min="8" max="92" value="50" aria-label="Compare SVG icons before and after SVGlance">
+          </label>
+        </div>
       </div>
       <div class="device" aria-hidden="true">
         <div class="icon-frame">
@@ -264,5 +443,13 @@
       </div>
     </section>
   </main>
+  <script>
+    const comparison = document.querySelector("#comparison");
+    const slider = comparison?.querySelector(".slider");
+
+    slider?.addEventListener("input", (event) => {
+      comparison.style.setProperty("--split", `${event.target.value}%`);
+    });
+  </script>
 </body>
 </html>

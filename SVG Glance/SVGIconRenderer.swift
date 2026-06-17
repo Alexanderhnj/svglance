@@ -18,8 +18,8 @@ enum SVGIconRenderer {
         }
     }
 
-    static func applyIcon(to url: URL) -> Bool {
-        guard let icon = icon(forFileAt: url) else {
+    static func applyIcon(to url: URL, size: CGFloat = 1024) -> Bool {
+        guard let icon = icon(forFileAt: url, size: size) else {
             return false
         }
 
