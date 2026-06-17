@@ -4,5 +4,8 @@
 !docs
 !docs/index.html
 !docs/.nojekyll
+!docs/robots.txt
+!docs/sitemap.xml
+!docs/site.webmanifest
 !docs/assets
 !docs/assets/**
