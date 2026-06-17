@@ -4,3 +4,4 @@ xcuserdata/
 *.xcuserstate
 *.dmg
 *.xcarchive
+.vercel
