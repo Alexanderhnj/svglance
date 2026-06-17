@@ -444,7 +444,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     return
                 }
 
-                let limitNote = didHitLimit ? " Scan was capped to keep SVGlance responsive; use Rescan to continue later." : ""
+                let limitNote = didHitLimit ? " Scan was capped to keep SVGlance responsive; choose a more specific folder if some SVGs were skipped." : ""
                 self.appState.statusText = "Updated \(totalSuccesses) of \(totalFiles) SVG Finder icon\(totalFiles == 1 ? "" : "s").\(limitNote)"
             }
         }

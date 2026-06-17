@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 - 2026-06-17
+
+- Clarified the large-folder scan cap message.
+
 ## 0.1.1 - 2026-06-17
 
 - Moved approved-folder SVG scanning and Finder icon generation off the main app thread.
