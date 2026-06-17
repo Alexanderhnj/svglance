@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <pattern id="checker" width="48" height="48" patternUnits="userSpaceOnUse">
+      <rect width="24" height="24" fill="#d7d7d7"/>
+      <rect x="24" y="24" width="24" height="24" fill="#d7d7d7"/>
+      <rect x="24" width="24" height="24" fill="#adadad"/>
+      <rect y="24" width="24" height="24" fill="#adadad"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="22" stdDeviation="28" flood-color="#141518" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#checker)"/>
+  <rect x="74" y="78" width="1052" height="474" rx="44" fill="#fff" opacity=".94" filter="url(#shadow)"/>
+  <text x="126" y="190" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="90" font-weight="800" fill="#141518">SVGlance</text>
+  <text x="130" y="252" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="32" font-weight="500" fill="#383d45">Free macOS utility for SVG previews, Finder icons,</text>
+  <text x="130" y="296" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="32" font-weight="500" fill="#383d45">and transparent PNG export.</text>
+  <g transform="translate(132 374)">
+    <rect width="260" height="58" rx="14" fill="#141518"/>
+    <text x="34" y="38" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="23" font-weight="800" fill="#fff">Download DMG</text>
+  </g>
+  <g transform="translate(740 158)">
+    <rect width="238" height="238" rx="52" fill="url(#checker)" stroke="#cfcfcf"/>
+    <rect x="56" y="64" width="126" height="110" rx="32" fill="#fff" opacity=".94"/>
+    <path d="M70 119s20-34 49-34 49 34 49 34-20 34-49 34-49-34-49-34Z" fill="#fff" stroke="#141518" stroke-width="9"/>
+    <circle cx="119" cy="119" r="18" fill="#141518"/>
+    <text x="90" y="128" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="27" font-weight="900" fill="#e97924">SVG</text>
+  </g>
+  <text x="742" y="450" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="24" font-weight="750" fill="#141518">White SVGs stop disappearing.</text>
+  <text x="742" y="486" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="19" font-weight="500" fill="#6b717b">github.com/Alexanderhnj/svglance</text>
+</svg>

@@ -1,0 +1,17 @@
+{
+  "name": "SVGlance",
+  "short_name": "SVGlance",
+  "description": "A free macOS utility that makes white and light SVG previews visible.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#d7d7d7",
+  "theme_color": "#d7d7d7",
+  "icons": [
+    {
+      "src": "/assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
