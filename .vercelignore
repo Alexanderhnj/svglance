@@ -1,5 +1,8 @@
 *
-!docs/
-!docs/**
-!vercel.json
 !.vercelignore
+!vercel.json
+!docs
+!docs/index.html
+!docs/.nojekyll
+!docs/assets
+!docs/assets/**
