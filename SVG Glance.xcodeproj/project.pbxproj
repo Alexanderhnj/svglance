@@ -6,23 +6,107 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXFileReference section */
-		118AE01D2FCF2F85003D1C41 /* SVG Glance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SVG Glance.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
+/* Begin PBXBuildFile section */
+		A10000000000000000000010 /* SVG_GlanceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000020 /* SVG_GlanceApp.swift */; };
+		A10000000000000000000011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000021 /* ContentView.swift */; };
+		A10000000000000000000012 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000022 /* AppDelegate.swift */; };
+		A10000000000000000000013 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* Assets.xcassets */; };
+		A10000000000000000000034 /* SVGIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000036 /* SVGIconRenderer.swift */; };
+		A10000000000000000000035 /* SVGViewerWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000037 /* SVGViewerWindowController.swift */; };
+		A10000000000000000000038 /* SVGlanceSVGRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000002B /* SVGlanceSVGRenderer.swift */; };
+		A10000000000000000000039 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000002C /* WebKit.framework */; };
+		A10000000000000000000014 /* PreviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000025 /* PreviewViewController.swift */; };
+		A10000000000000000000015 /* SVGlanceSVGRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000002B /* SVGlanceSVGRenderer.swift */; };
+		A10000000000000000000016 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000002C /* WebKit.framework */; };
+		A10000000000000000000017 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000002D /* Quartz.framework */; };
+		A10000000000000000000018 /* ThumbnailProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000028 /* ThumbnailProvider.swift */; };
+		A10000000000000000000019 /* SVGlanceSVGRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000002B /* SVGlanceSVGRenderer.swift */; };
+		A1000000000000000000001A /* QuickLookThumbnailing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000002E /* QuickLookThumbnailing.framework */; };
+		A1000000000000000000001C /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000002D /* Quartz.framework */; };
+		A1000000000000000000001D /* SVGlanceQuickLook.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A10000000000000000000001 /* SVGlanceQuickLook.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A1000000000000000000001E /* SVGlanceThumbnail.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* SVGlanceThumbnail.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		118AE01F2FCF2F85003D1C41 /* SVG Glance */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "SVG Glance";
-			sourceTree = "<group>";
+/* Begin PBXContainerItemProxy section */
+		A10000000000000000000050 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 118AE0152FCF2F85003D1C41 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000000000000000000060;
+			remoteInfo = SVGlanceQuickLook;
 		};
-/* End PBXFileSystemSynchronizedRootGroup section */
+		A10000000000000000000052 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 118AE0152FCF2F85003D1C41 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000000000000000000061;
+			remoteInfo = SVGlanceThumbnail;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A10000000000000000000040 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A1000000000000000000001D /* SVGlanceQuickLook.appex in Embed App Extensions */,
+				A1000000000000000000001E /* SVGlanceThumbnail.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		118AE01D2FCF2F85003D1C41 /* SVGlance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SVGlance.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000001 /* SVGlanceQuickLook.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SVGlanceQuickLook.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000002 /* SVGlanceThumbnail.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SVGlanceThumbnail.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000020 /* SVG_GlanceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVG_GlanceApp.swift; sourceTree = "<group>"; };
+		A10000000000000000000021 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A10000000000000000000022 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A10000000000000000000023 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A10000000000000000000024 /* SVGlance.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SVGlance.entitlements; sourceTree = "<group>"; };
+		A10000000000000000000036 /* SVGIconRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGIconRenderer.swift; sourceTree = "<group>"; };
+		A10000000000000000000037 /* SVGViewerWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGViewerWindowController.swift; sourceTree = "<group>"; };
+		A10000000000000000000025 /* PreviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewViewController.swift; sourceTree = "<group>"; };
+		A10000000000000000000026 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A10000000000000000000027 /* SVGlanceQuickLook.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SVGlanceQuickLook.entitlements; sourceTree = "<group>"; };
+		A10000000000000000000028 /* ThumbnailProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailProvider.swift; sourceTree = "<group>"; };
+		A10000000000000000000029 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1000000000000000000002A /* SVGlanceThumbnail.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SVGlanceThumbnail.entitlements; sourceTree = "<group>"; };
+		A1000000000000000000002B /* SVGlanceSVGRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGlanceSVGRenderer.swift; sourceTree = "<group>"; };
+		A1000000000000000000002C /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		A1000000000000000000002D /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
+		A1000000000000000000002E /* QuickLookThumbnailing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLookThumbnailing.framework; path = System/Library/Frameworks/QuickLookThumbnailing.framework; sourceTree = SDKROOT; };
+		A1000000000000000000002F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		118AE01A2FCF2F85003D1C41 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000039 /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000042 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000016 /* WebKit.framework in Frameworks */,
+				A10000000000000000000017 /* Quartz.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000045 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000000000000000000001A /* QuickLookThumbnailing.framework in Frameworks */,
+				A1000000000000000000001C /* Quartz.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -33,6 +117,10 @@
 			isa = PBXGroup;
 			children = (
 				118AE01F2FCF2F85003D1C41 /* SVG Glance */,
+				A10000000000000000000030 /* SVGlanceQuickLook */,
+				A10000000000000000000031 /* SVGlanceThumbnail */,
+				A10000000000000000000032 /* SVGlanceShared */,
+				A10000000000000000000033 /* Frameworks */,
 				118AE01E2FCF2F85003D1C41 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,35 +128,128 @@
 		118AE01E2FCF2F85003D1C41 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				118AE01D2FCF2F85003D1C41 /* SVG Glance.app */,
+				118AE01D2FCF2F85003D1C41 /* SVGlance.app */,
+				A10000000000000000000001 /* SVGlanceQuickLook.appex */,
+				A10000000000000000000002 /* SVGlanceThumbnail.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		118AE01F2FCF2F85003D1C41 /* SVG Glance */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000020 /* SVG_GlanceApp.swift */,
+				A10000000000000000000021 /* ContentView.swift */,
+				A10000000000000000000022 /* AppDelegate.swift */,
+				A10000000000000000000036 /* SVGIconRenderer.swift */,
+				A10000000000000000000037 /* SVGViewerWindowController.swift */,
+				A10000000000000000000023 /* Assets.xcassets */,
+				A1000000000000000000002F /* Info.plist */,
+				A10000000000000000000024 /* SVGlance.entitlements */,
+			);
+			path = "SVG Glance";
+			sourceTree = "<group>";
+		};
+		A10000000000000000000030 /* SVGlanceQuickLook */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000025 /* PreviewViewController.swift */,
+				A10000000000000000000026 /* Info.plist */,
+				A10000000000000000000027 /* SVGlanceQuickLook.entitlements */,
+			);
+			path = SVGlanceQuickLook;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000031 /* SVGlanceThumbnail */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000028 /* ThumbnailProvider.swift */,
+				A10000000000000000000029 /* Info.plist */,
+				A1000000000000000000002A /* SVGlanceThumbnail.entitlements */,
+			);
+			path = SVGlanceThumbnail;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000032 /* SVGlanceShared */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000002B /* SVGlanceSVGRenderer.swift */,
+			);
+			path = SVGlanceShared;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000033 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000002E /* QuickLookThumbnailing.framework */,
+				A1000000000000000000002D /* Quartz.framework */,
+				A1000000000000000000002C /* WebKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		118AE01C2FCF2F85003D1C41 /* SVG Glance */ = {
+		118AE01C2FCF2F85003D1C41 /* SVGlance */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 118AE0282FCF2F87003D1C41 /* Build configuration list for PBXNativeTarget "SVG Glance" */;
+			buildConfigurationList = 118AE0282FCF2F87003D1C41 /* Build configuration list for PBXNativeTarget "SVGlance" */;
 			buildPhases = (
 				118AE0192FCF2F85003D1C41 /* Sources */,
 				118AE01A2FCF2F85003D1C41 /* Frameworks */,
 				118AE01B2FCF2F85003D1C41 /* Resources */,
+				A10000000000000000000040 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A10000000000000000000051 /* PBXTargetDependency */,
+				A10000000000000000000053 /* PBXTargetDependency */,
+			);
+			name = SVGlance;
+			packageProductDependencies = (
+			);
+			productName = SVGlance;
+			productReference = 118AE01D2FCF2F85003D1C41 /* SVGlance.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A10000000000000000000060 /* SVGlanceQuickLook */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000000000000000000070 /* Build configuration list for PBXNativeTarget "SVGlanceQuickLook" */;
+			buildPhases = (
+				A10000000000000000000041 /* Sources */,
+				A10000000000000000000042 /* Frameworks */,
+				A10000000000000000000043 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				118AE01F2FCF2F85003D1C41 /* SVG Glance */,
-			);
-			name = "SVG Glance";
+			name = SVGlanceQuickLook;
 			packageProductDependencies = (
 			);
-			productName = "SVG Glance";
-			productReference = 118AE01D2FCF2F85003D1C41 /* SVG Glance.app */;
-			productType = "com.apple.product-type.application";
+			productName = SVGlanceQuickLook;
+			productReference = A10000000000000000000001 /* SVGlanceQuickLook.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		A10000000000000000000061 /* SVGlanceThumbnail */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000000000000000000073 /* Build configuration list for PBXNativeTarget "SVGlanceThumbnail" */;
+			buildPhases = (
+				A10000000000000000000044 /* Sources */,
+				A10000000000000000000045 /* Frameworks */,
+				A10000000000000000000046 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SVGlanceThumbnail;
+			packageProductDependencies = (
+			);
+			productName = SVGlanceThumbnail;
+			productReference = A10000000000000000000002 /* SVGlanceThumbnail.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +262,12 @@
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					118AE01C2FCF2F85003D1C41 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					A10000000000000000000060 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					A10000000000000000000061 = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 				};
@@ -99,13 +286,30 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				118AE01C2FCF2F85003D1C41 /* SVG Glance */,
+				118AE01C2FCF2F85003D1C41 /* SVGlance */,
+				A10000000000000000000060 /* SVGlanceQuickLook */,
+				A10000000000000000000061 /* SVGlanceThumbnail */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		118AE01B2FCF2F85003D1C41 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000013 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000043 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000046 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -119,17 +323,53 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000010 /* SVG_GlanceApp.swift in Sources */,
+				A10000000000000000000011 /* ContentView.swift in Sources */,
+				A10000000000000000000012 /* AppDelegate.swift in Sources */,
+				A10000000000000000000034 /* SVGIconRenderer.swift in Sources */,
+				A10000000000000000000035 /* SVGViewerWindowController.swift in Sources */,
+				A10000000000000000000038 /* SVGlanceSVGRenderer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000041 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000014 /* PreviewViewController.swift in Sources */,
+				A10000000000000000000015 /* SVGlanceSVGRenderer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000044 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000018 /* ThumbnailProvider.swift in Sources */,
+				A10000000000000000000019 /* SVGlanceSVGRenderer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A10000000000000000000051 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10000000000000000000060 /* SVGlanceQuickLook */;
+			targetProxy = A10000000000000000000050 /* PBXContainerItemProxy */;
+		};
+		A10000000000000000000053 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10000000000000000000061 /* SVGlanceThumbnail */;
+			targetProxy = A10000000000000000000052 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		118AE0262FCF2F87003D1C41 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -179,13 +419,14 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
 			};
 			name = Debug;
 		};
@@ -193,7 +434,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -237,11 +477,12 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.9;
 			};
 			name = Release;
 		};
@@ -250,6 +491,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "SVG Glance/SVGlance.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -257,23 +499,19 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "SVG Glance/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "DevDesign.SVG-Glance";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				REGISTER_APP_GROUPS = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.svglance.app;
+				PRODUCT_NAME = SVGlance;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 5.9;
 			};
 			name = Debug;
 		};
@@ -282,6 +520,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "SVG Glance/SVGlance.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -289,23 +528,135 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "SVG Glance/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "DevDesign.SVG-Glance";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				REGISTER_APP_GROUPS = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.svglance.app;
+				PRODUCT_NAME = SVGlance;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		A10000000000000000000071 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = SVGlanceQuickLook/SVGlanceQuickLook.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2M22F8FTD7;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SVGlanceQuickLook/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.svglance.app.quicklook;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		A10000000000000000000072 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = SVGlanceQuickLook/SVGlanceQuickLook.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2M22F8FTD7;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SVGlanceQuickLook/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.svglance.app.quicklook;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		A10000000000000000000074 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = SVGlanceThumbnail/SVGlanceThumbnail.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2M22F8FTD7;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SVGlanceThumbnail/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.svglance.app.thumbnail;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		A10000000000000000000075 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = SVGlanceThumbnail/SVGlanceThumbnail.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2M22F8FTD7;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SVGlanceThumbnail/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.svglance.app.thumbnail;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_VERSION = 5.9;
 			};
 			name = Release;
 		};
@@ -321,11 +672,29 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		118AE0282FCF2F87003D1C41 /* Build configuration list for PBXNativeTarget "SVG Glance" */ = {
+		118AE0282FCF2F87003D1C41 /* Build configuration list for PBXNativeTarget "SVGlance" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				118AE0292FCF2F87003D1C41 /* Debug */,
 				118AE02A2FCF2F87003D1C41 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000000000000000000070 /* Build configuration list for PBXNativeTarget "SVGlanceQuickLook" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000071 /* Debug */,
+				A10000000000000000000072 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000000000000000000073 /* Build configuration list for PBXNativeTarget "SVGlanceThumbnail" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000074 /* Debug */,
+				A10000000000000000000075 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
