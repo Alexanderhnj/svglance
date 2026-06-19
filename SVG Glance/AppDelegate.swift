@@ -35,16 +35,30 @@ struct SVGlanceApprovedFolder: Identifiable, Hashable {
     }
 }
 
+private struct GitHubRelease: Decodable {
+    let tagName: String
+    let htmlURL: URL
+
+    enum CodingKeys: String, CodingKey {
+        case tagName = "tag_name"
+        case htmlURL = "html_url"
+    }
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private enum DefaultsKey {
         static let automaticIconFolderBookmark = "SVGlanceAutomaticIconFolderBookmark"
         static let didShowFolderOnboarding = "SVGlanceDidShowFolderOnboarding"
+        static let lastUpdateCheck = "SVGlanceLastUpdateCheck"
     }
 
     private enum ReleaseLinks {
         static let projectURL = URL(string: "https://github.com/Alexanderhnj/svglance")!
         static let privacyURL = URL(string: "https://github.com/Alexanderhnj/svglance/blob/main/PRIVACY.md")!
         static let feedbackURL = URL(string: "https://svglance.vercel.app/#feedback")!
+        static let latestReleaseURL = URL(string: "https://github.com/Alexanderhnj/svglance/releases/latest")!
+        static let latestDMGURL = URL(string: "https://github.com/Alexanderhnj/svglance/releases/latest/download/SVGlance.dmg")!
+        static let latestReleaseAPIURL = URL(string: "https://api.github.com/repos/Alexanderhnj/svglance/releases/latest")!
     }
 
     private var statusItem: NSStatusItem?
@@ -83,6 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 rescanFolders: { [weak self] in self?.rescanApprovedFolders(trigger: .manual) },
                 manageFolders: { [weak self] in self?.showApprovedFoldersWindow() },
                 resetFolders: { [weak self] in self?.confirmResetApprovedFolders() },
+                checkForUpdates: { [weak self] in self?.checkForUpdates(userInitiated: true) },
                 shareFeedback: { [weak self] in self?.openFeedbackPage() },
                 showAbout: { [weak self] in self?.showAboutWindow() }
             )
@@ -105,6 +120,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.showFirstRunFolderOnboardingIfNeeded()
             self?.refreshWatchedFolders()
+            self?.checkForUpdatesIfNeeded()
         }
     }
 
@@ -316,6 +332,129 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func openFeedbackPage() {
         NSWorkspace.shared.open(ReleaseLinks.feedbackURL)
         appState.statusText = "Opened the SVGlance feedback form."
+    }
+
+    private func checkForUpdatesIfNeeded() {
+        let lastCheck = UserDefaults.standard.object(forKey: DefaultsKey.lastUpdateCheck) as? Date
+        if let lastCheck, Date().timeIntervalSince(lastCheck) < 24 * 60 * 60 {
+            return
+        }
+
+        checkForUpdates(userInitiated: false)
+    }
+
+    private func checkForUpdates(userInitiated: Bool) {
+        if userInitiated {
+            appState.statusText = "Checking for SVGlance updates..."
+        }
+
+        var request = URLRequest(url: ReleaseLinks.latestReleaseAPIURL)
+        request.setValue("SVGlance", forHTTPHeaderField: "User-Agent")
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.timeoutInterval = 12
+
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                guard let self else {
+                    return
+                }
+
+                if let error {
+                    if userInitiated {
+                        self.showUpdateCheckFailed(message: error.localizedDescription)
+                    }
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse,
+                      (200..<300).contains(httpResponse.statusCode),
+                      let data else {
+                    if userInitiated {
+                        self.showUpdateCheckFailed(message: "GitHub did not return release information.")
+                    }
+                    return
+                }
+
+                do {
+                    let release = try JSONDecoder().decode(GitHubRelease.self, from: data)
+                    UserDefaults.standard.set(Date(), forKey: DefaultsKey.lastUpdateCheck)
+                    self.handleLatestRelease(release, userInitiated: userInitiated)
+                } catch {
+                    if userInitiated {
+                        self.showUpdateCheckFailed(message: error.localizedDescription)
+                    }
+                }
+            }
+        }.resume()
+    }
+
+    private func handleLatestRelease(_ release: GitHubRelease, userInitiated: Bool) {
+        let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
+        let latestVersion = release.tagName.trimmingCharacters(in: CharacterSet(charactersIn: "vV"))
+
+        guard compareVersions(latestVersion, currentVersion) == .orderedDescending else {
+            if userInitiated {
+                appState.statusText = "SVGlance is up to date."
+                let alert = NSAlert()
+                alert.messageText = "SVGlance is up to date"
+                alert.informativeText = "You are running version \(currentVersion)."
+                alert.addButton(withTitle: "OK")
+                alert.runModal()
+            }
+            return
+        }
+
+        appState.statusText = "SVGlance \(latestVersion) is available."
+
+        let alert = NSAlert()
+        alert.messageText = "SVGlance \(latestVersion) is available"
+        alert.informativeText = "You are running version \(currentVersion). Download the latest DMG from GitHub and replace the app in Applications."
+        alert.addButton(withTitle: "Download Update")
+        alert.addButton(withTitle: "View Release Notes")
+        alert.addButton(withTitle: "Later")
+
+        switch alert.runModal() {
+        case .alertFirstButtonReturn:
+            NSWorkspace.shared.open(ReleaseLinks.latestDMGURL)
+        case .alertSecondButtonReturn:
+            NSWorkspace.shared.open(release.htmlURL)
+        default:
+            break
+        }
+    }
+
+    private func showUpdateCheckFailed(message: String) {
+        appState.statusText = "Could not check for updates."
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Could not check for updates"
+        alert.informativeText = "\(message)\n\nYou can still check GitHub manually."
+        alert.addButton(withTitle: "Open GitHub Releases")
+        alert.addButton(withTitle: "OK")
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            NSWorkspace.shared.open(ReleaseLinks.latestReleaseURL)
+        }
+    }
+
+    private func compareVersions(_ lhs: String, _ rhs: String) -> ComparisonResult {
+        let leftParts = lhs.split(whereSeparator: { !$0.isNumber }).map { Int($0) ?? 0 }
+        let rightParts = rhs.split(whereSeparator: { !$0.isNumber }).map { Int($0) ?? 0 }
+        let count = max(leftParts.count, rightParts.count)
+
+        for index in 0..<count {
+            let left = index < leftParts.count ? leftParts[index] : 0
+            let right = index < rightParts.count ? rightParts[index] : 0
+
+            if left < right {
+                return .orderedAscending
+            }
+            if left > right {
+                return .orderedDescending
+            }
+        }
+
+        return .orderedSame
     }
 
     private func confirmResetApprovedFolders() {

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4 - 2026-06-19
+
+- Added a lightweight GitHub Releases update checker in the menu bar app.
+- Added a daily background update check that prompts users when a newer DMG is available.
+- Added Vercel Analytics hooks and a `/download` handoff page to track download intent.
+- Made the website beta status more visible.
+
 ## 0.1.3 - 2026-06-19
 
 - Added a menu-bar "Share Feedback" shortcut that opens the website feedback form.

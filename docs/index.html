@@ -39,6 +39,10 @@
   <link rel="manifest" href="/site.webmanifest">
   <link rel="preload" href="/assets/app-icon.png" as="image" type="image/png">
   <meta name="theme-color" content="#d7d7d7">
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
 
   <script type="application/ld+json">
     {
@@ -48,10 +52,10 @@
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "macOS 13.0 or later",
       "description": "SVGlance is a free macOS utility that makes white and light SVG files visible with checkerboard previews, Finder icon treatment, and transparent PNG export.",
-      "softwareVersion": "0.1.2",
+      "softwareVersion": "0.1.4",
       "isAccessibleForFree": true,
       "license": "https://github.com/Alexanderhnj/svglance/blob/main/LICENSE",
-      "downloadUrl": "https://github.com/Alexanderhnj/svglance/releases/latest/download/SVGlance.dmg",
+      "downloadUrl": "https://svglance.vercel.app/download",
       "codeRepository": "https://github.com/Alexanderhnj/svglance",
       "author": {
         "@type": "Person",
@@ -795,13 +799,13 @@
   <main>
     <section class="page" aria-label="SVGlance download">
       <div class="intro">
-        <div class="eyebrow"><span class="dot"></span> Free macOS SVG utility</div>
+        <div class="eyebrow"><span class="dot"></span> Free macOS SVG utility · Beta</div>
         <h1>SVGlance</h1>
         <p class="lede">Make white and light SVGs visible on macOS with a checkerboard viewer, transparent PNG export, and Finder icon treatment.</p>
         <p class="answer-copy">SVGlance is a native macOS app for designers and developers who work with transparent SVG files. macOS makes white SVGs unreadable in preview; SVGlance gives them a clear transparency background so they can be inspected quickly.</p>
         <p class="beta-note">Beta note: this is currently an unsigned preview build, so macOS may show a warning until Developer ID notarization is ready.</p>
         <div class="actions">
-          <a class="button primary" href="https://github.com/Alexanderhnj/svglance/releases/latest/download/SVGlance.dmg">Download</a>
+          <a class="button primary" href="/download" data-download-link>Download</a>
         </div>
         <div class="social-block">
           <p class="label">Follow my work</p>
@@ -915,6 +919,18 @@
       ].join("\n");
       const subject = encodeURIComponent("SVGlance feedback");
       window.location.href = `mailto:alexanderhnj2001@gmail.com?subject=${subject}&body=${encodeURIComponent(body)}`;
+    });
+
+    document.querySelectorAll("[data-download-link]").forEach((link) => {
+      link.addEventListener("click", () => {
+        window.va?.("event", {
+          name: "download_clicked",
+          data: {
+            source: "landing_page",
+            app: "SVGlance"
+          }
+        });
+      });
     });
   </script>
 </body>

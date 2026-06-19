@@ -3,6 +3,7 @@
 !vercel.json
 !docs
 !docs/index.html
+!docs/download.html
 !docs/.nojekyll
 !docs/robots.txt
 !docs/sitemap.xml

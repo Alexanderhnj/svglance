@@ -12,6 +12,7 @@ struct StatusPopoverView: View {
     let rescanFolders: () -> Void
     let manageFolders: () -> Void
     let resetFolders: () -> Void
+    let checkForUpdates: () -> Void
     let shareFeedback: () -> Void
     let showAbout: () -> Void
 
@@ -115,6 +116,7 @@ struct StatusPopoverView: View {
 
             HStack {
                 Button("About SVGlance", action: showAbout)
+                Button("Check for Updates", action: checkForUpdates)
                 Button("Share Feedback", action: shareFeedback)
 
                 Spacer()
@@ -254,6 +256,7 @@ struct ApprovedFoldersView: View {
         rescanFolders: {},
         manageFolders: {},
         resetFolders: {},
+        checkForUpdates: {},
         shareFeedback: {},
         showAbout: {}
     )
