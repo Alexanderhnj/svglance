@@ -41,6 +41,12 @@ Expected output:
 
 - `/private/tmp/svglance-release/SVGlance.dmg`
 
+The package script uses `release/dmg-background.png` for a branded drag-to-Applications window when Finder automation is available. To force a plain DMG, run:
+
+```sh
+SVGLANCE_SKIP_DMG_STYLING=1 ./scripts/package-dmg.sh
+```
+
 ## Notarize
 
 Using a stored notarytool profile:

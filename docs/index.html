@@ -109,6 +109,9 @@
       --paper-strong: #ffffff;
       --accent: #e97924;
       --accent-soft: #fff2e8;
+      --danger: #ff5f57;
+      --warning: #ffbd2e;
+      --success: #28c840;
       --checker-light: #d7d7d7;
       --checker-dark: #adadad;
       --tile: 28px;
@@ -273,6 +276,10 @@
 
     .social-block {
       margin-top: 22px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .label {
@@ -303,18 +310,24 @@
       border-color: rgba(20, 21, 24, 0.55);
     }
 
+    .beta-note {
+      width: fit-content;
+      max-width: 100%;
+      margin: 18px 0 0;
+      padding: 9px 11px;
+      border-radius: 12px;
+      border: 1px solid rgba(233, 121, 36, 0.22);
+      background: var(--accent-soft);
+      color: #8c4a18;
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 650;
+    }
+
     .comparison {
       --split: 54%;
       width: min(690px, 100%);
       margin-top: 32px;
-    }
-
-    .comparison-heading {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 18px;
-      margin-bottom: 10px;
     }
 
     .comparison-title {
@@ -365,6 +378,19 @@
       height: 10px;
       border-radius: 50%;
       background: #d9dce1;
+      box-shadow: inset 0 0 0 1px rgba(20, 21, 24, 0.08);
+    }
+
+    .window-dot:nth-child(1) {
+      background: var(--danger);
+    }
+
+    .window-dot:nth-child(2) {
+      background: var(--warning);
+    }
+
+    .window-dot:nth-child(3) {
+      background: var(--success);
     }
 
     .window-title {
@@ -379,6 +405,7 @@
       grid-template-columns: repeat(5, minmax(64px, 1fr));
       gap: clamp(10px, 2vw, 18px);
       padding: clamp(16px, 2.5vw, 26px);
+      padding-bottom: clamp(48px, 6vw, 58px);
     }
 
     .after {
@@ -432,10 +459,18 @@
     }
 
     .after .glyph {
-      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.28));
+      filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.14));
     }
 
     .glyph--white {
+      color: #ffffff;
+    }
+
+    .glyph--snow {
+      color: #ffffff;
+    }
+
+    .glyph--paper {
       color: #ffffff;
     }
 
@@ -443,16 +478,8 @@
       color: #f5f3ee;
     }
 
-    .glyph--black {
-      color: #111317;
-    }
-
-    .glyph--blue {
-      color: #2f43ff;
-    }
-
-    .glyph--orange {
-      color: #f0842a;
+    .glyph--mist {
+      color: #eeeeea;
     }
 
     .split-line {
@@ -467,10 +494,18 @@
     }
 
     .split-line::after {
-      content: "";
+      content: none;
+    }
+
+    .split-line::before {
+      content: none;
+    }
+
+    .split-handle {
       position: absolute;
-      left: 50%;
+      left: var(--split);
       top: 50%;
+      z-index: 5;
       width: 42px;
       height: 42px;
       border-radius: 50%;
@@ -478,25 +513,33 @@
       background: #ffffff;
       border: 1px solid rgba(20, 21, 24, 0.16);
       box-shadow: 0 10px 24px rgba(20, 21, 24, 0.22);
+      pointer-events: none;
     }
 
-    .split-line::before {
+    .split-handle::before,
+    .split-handle::after {
       content: "";
       position: absolute;
-      left: 50%;
+      width: 9px;
+      height: 9px;
       top: 50%;
-      width: 13px;
-      height: 13px;
-      z-index: 1;
-      transform: translate(-50%, -50%) rotate(45deg);
-      border-left: 2px solid #333841;
-      border-bottom: 2px solid #333841;
-      box-shadow: 6px -6px 0 -4px #333841, 7px -7px 0 -4px #333841;
+      border-top: 2px solid #333841;
+      border-right: 2px solid #333841;
+    }
+
+    .split-handle::before {
+      left: 11px;
+      transform: translateY(-50%) rotate(-135deg);
+    }
+
+    .split-handle::after {
+      right: 11px;
+      transform: translateY(-50%) rotate(45deg);
     }
 
     .comparison-badges {
       position: absolute;
-      inset: 48px 14px auto;
+      inset: auto 18px 16px;
       display: flex;
       justify-content: space-between;
       z-index: 5;
@@ -523,6 +566,91 @@
       margin: 0;
       cursor: ew-resize;
       opacity: 0;
+    }
+
+    .feedback-card {
+      margin-top: 26px;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.74);
+      box-shadow: 0 16px 36px rgba(20, 21, 24, 0.08);
+    }
+
+    .feedback-card h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .feedback-card p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .feedback-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .field--wide {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: var(--soft-ink);
+      font-size: 12px;
+      font-weight: 740;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid rgba(20, 21, 24, 0.14);
+      border-radius: 10px;
+      background: #ffffff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.35;
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: rgba(233, 121, 36, 0.55);
+      box-shadow: 0 0 0 3px rgba(233, 121, 36, 0.12);
+    }
+
+    .field textarea {
+      min-height: 82px;
+      resize: vertical;
+    }
+
+    .feedback-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .feedback-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
     }
 
     .device {
@@ -598,12 +726,13 @@
         width: 100%;
       }
 
-      .comparison {
-        margin-top: 28px;
+      .social-block {
+        align-items: flex-start;
+        gap: 8px 14px;
       }
 
-      .comparison-heading {
-        display: block;
+      .comparison {
+        margin-top: 28px;
       }
 
       .comparison-shell {
@@ -614,6 +743,15 @@
         grid-template-columns: repeat(3, minmax(70px, 1fr));
         gap: 13px;
         padding-top: 32px;
+      }
+
+      .feedback-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feedback-actions {
+        align-items: stretch;
+        flex-direction: column;
       }
     }
 
@@ -660,13 +798,13 @@
         <div class="eyebrow"><span class="dot"></span> Free macOS SVG utility</div>
         <h1>SVGlance</h1>
         <p class="lede">Make white and light SVGs visible on macOS with a checkerboard viewer, transparent PNG export, and Finder icon treatment.</p>
-        <p class="answer-copy">macOS often previews transparent SVG files on white. SVGlance fixes the practical problem: invisible white artwork gets a clear transparency background so designers and developers can inspect SVGs quickly.</p>
+        <p class="answer-copy">SVGlance is a native macOS app for designers and developers who work with transparent SVG files. macOS makes white SVGs unreadable in preview; SVGlance gives them a clear transparency background so they can be inspected quickly.</p>
+        <p class="beta-note">Beta note: this is currently an unsigned preview build, so macOS may show a warning until Developer ID notarization is ready.</p>
         <div class="actions">
-          <a class="button primary" href="https://github.com/Alexanderhnj/svglance/releases/latest/download/SVGlance.dmg">Download DMG</a>
-          <a class="button secondary" href="https://github.com/Alexanderhnj/svglance">Source code</a>
+          <a class="button primary" href="https://github.com/Alexanderhnj/svglance/releases/latest/download/SVGlance.dmg">Download</a>
         </div>
         <div class="social-block">
-          <p class="label">Follow the project</p>
+          <p class="label">Follow my work</p>
           <nav class="links" aria-label="Social links">
             <a href="https://github.com/Alexanderhnj">GitHub</a>
             <a href="https://x.com/TheDevDesign">X</a>
@@ -674,13 +812,8 @@
           </nav>
         </div>
         <div class="comparison" id="comparison">
-          <div class="comparison-heading">
-            <div>
-              <p class="comparison-title">White SVGs should not disappear.</p>
-              <p class="comparison-note">Drag across the Finder-style preview to compare macOS default thumbnails with SVGlance treatment.</p>
-            </div>
-            <p class="label">Before and after</p>
-          </div>
+          <p class="comparison-title">macOS makes white SVGs unreadable in preview.</p>
+          <p class="comparison-note">Drag across the Finder-style preview to see how SVGlance reveals the artwork without changing the SVG itself.</p>
           <div class="comparison-shell">
             <div class="finder before" aria-hidden="true">
               <div class="finder-windowbar">
@@ -691,10 +824,10 @@
               </div>
               <div class="file-grid">
                 <div class="file"><span class="thumb"><svg class="glyph glyph--white" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="23" fill="currentColor"/></svg></span><span>white.svg</span></div>
-                <div class="file"><span class="thumb"><svg class="glyph glyph--milk" viewBox="0 0 64 64" aria-hidden="true"><rect x="13" y="13" width="38" height="38" rx="12" fill="currentColor"/></svg></span><span>soft.svg</span></div>
-                <div class="file"><span class="thumb"><svg class="glyph glyph--black" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="7"/></svg></span><span>ring.svg</span></div>
-                <div class="file"><span class="thumb"><svg class="glyph glyph--blue" viewBox="0 0 64 64" aria-hidden="true"><rect x="11" y="17" width="42" height="30" rx="9" fill="currentColor"/></svg></span><span>blue.svg</span></div>
-                <div class="file"><span class="thumb"><svg class="glyph glyph--orange" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="20" fill="currentColor"/><rect x="29" y="12" width="6" height="40" rx="3" fill="rgba(255,255,255,0.55)"/></svg></span><span>color.svg</span></div>
+                <div class="file"><span class="thumb"><svg class="glyph glyph--snow" viewBox="0 0 64 64" aria-hidden="true"><rect x="13" y="13" width="38" height="38" rx="12" fill="currentColor"/></svg></span><span>snow.svg</span></div>
+                <div class="file"><span class="thumb"><svg class="glyph glyph--paper" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="7"/></svg></span><span>ring.svg</span></div>
+                <div class="file"><span class="thumb"><svg class="glyph glyph--milk" viewBox="0 0 64 64" aria-hidden="true"><rect x="11" y="17" width="42" height="30" rx="9" fill="currentColor"/></svg></span><span>soft.svg</span></div>
+                <div class="file"><span class="thumb"><svg class="glyph glyph--mist" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="20" fill="currentColor"/><rect x="29" y="12" width="6" height="40" rx="3" fill="rgba(255,255,255,0.55)"/></svg></span><span>mist.svg</span></div>
               </div>
             </div>
             <div class="finder after" aria-hidden="true">
@@ -706,10 +839,10 @@
               </div>
               <div class="file-grid">
                 <div class="file"><span class="thumb"><svg class="glyph glyph--white" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="23" fill="currentColor"/></svg></span><span>white.svg</span></div>
-                <div class="file"><span class="thumb"><svg class="glyph glyph--milk" viewBox="0 0 64 64" aria-hidden="true"><rect x="13" y="13" width="38" height="38" rx="12" fill="currentColor"/></svg></span><span>soft.svg</span></div>
-                <div class="file"><span class="thumb"><svg class="glyph glyph--black" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="7"/></svg></span><span>ring.svg</span></div>
-                <div class="file"><span class="thumb"><svg class="glyph glyph--blue" viewBox="0 0 64 64" aria-hidden="true"><rect x="11" y="17" width="42" height="30" rx="9" fill="currentColor"/></svg></span><span>blue.svg</span></div>
-                <div class="file"><span class="thumb"><svg class="glyph glyph--orange" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="20" fill="currentColor"/><rect x="29" y="12" width="6" height="40" rx="3" fill="rgba(255,255,255,0.55)"/></svg></span><span>color.svg</span></div>
+                <div class="file"><span class="thumb"><svg class="glyph glyph--snow" viewBox="0 0 64 64" aria-hidden="true"><rect x="13" y="13" width="38" height="38" rx="12" fill="currentColor"/></svg></span><span>snow.svg</span></div>
+                <div class="file"><span class="thumb"><svg class="glyph glyph--paper" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="7"/></svg></span><span>ring.svg</span></div>
+                <div class="file"><span class="thumb"><svg class="glyph glyph--milk" viewBox="0 0 64 64" aria-hidden="true"><rect x="11" y="17" width="42" height="30" rx="9" fill="currentColor"/></svg></span><span>soft.svg</span></div>
+                <div class="file"><span class="thumb"><svg class="glyph glyph--mist" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="20" fill="currentColor"/><rect x="29" y="12" width="6" height="40" rx="3" fill="rgba(255,255,255,0.55)"/></svg></span><span>mist.svg</span></div>
               </div>
             </div>
             <div class="comparison-badges" aria-hidden="true">
@@ -717,10 +850,37 @@
               <span class="badge">SVGlance</span>
             </div>
             <span class="split-line" aria-hidden="true"></span>
+            <span class="split-handle" aria-hidden="true"></span>
             <label class="sr-only" for="comparison-slider">Compare SVG previews before and after SVGlance</label>
-            <input id="comparison-slider" class="slider" type="range" min="8" max="92" value="54" aria-label="Compare SVG previews before and after SVGlance">
+            <input id="comparison-slider" class="slider" type="range" min="1" max="99" value="54" aria-label="Compare SVG previews before and after SVGlance">
           </div>
         </div>
+        <form class="feedback-card" id="feedback" aria-label="Send feedback">
+          <h2>Report a bug or suggest an improvement</h2>
+          <p>Share what happened, what you expected, and any screenshot that helps explain it. The form opens an email draft so you can review it before sending.</p>
+          <div class="feedback-grid">
+            <div class="field">
+              <label for="feedback-name">Name</label>
+              <input id="feedback-name" name="name" autocomplete="name" placeholder="Your name">
+            </div>
+            <div class="field">
+              <label for="feedback-email">Email</label>
+              <input id="feedback-email" name="email" type="email" autocomplete="email" placeholder="you@example.com">
+            </div>
+            <div class="field field--wide">
+              <label for="feedback-message">Bug or suggestion</label>
+              <textarea id="feedback-message" name="message" required placeholder="Tell me what you found or what would make SVGlance better."></textarea>
+            </div>
+            <div class="field field--wide">
+              <label for="feedback-attachment">Screenshot attachment</label>
+              <input id="feedback-attachment" name="attachment" type="file" accept="image/*,.pdf">
+            </div>
+          </div>
+          <div class="feedback-actions">
+            <button class="button secondary" type="submit">Open email draft</button>
+            <span class="feedback-note">Browser security prevents auto-attaching files to email drafts. If you choose a screenshot, attach it after your email app opens.</span>
+          </div>
+        </form>
       </div>
       <div class="device" aria-hidden="true">
         <img class="app-icon" src="assets/app-icon.png" width="512" height="512" alt="">
@@ -734,6 +894,27 @@
 
     slider?.addEventListener("input", (event) => {
       comparison.style.setProperty("--split", `${event.target.value}%`);
+    });
+
+    const feedbackForm = document.querySelector("#feedback");
+    feedbackForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const form = new FormData(feedbackForm);
+      const name = String(form.get("name") || "").trim();
+      const email = String(form.get("email") || "").trim();
+      const message = String(form.get("message") || "").trim();
+      const attachment = feedbackForm.querySelector("#feedback-attachment")?.files?.[0]?.name;
+      const body = [
+        `Name: ${name || "Not provided"}`,
+        `Email: ${email || "Not provided"}`,
+        "",
+        "Feedback:",
+        message || "Not provided",
+        "",
+        attachment ? `Screenshot selected: ${attachment}. Please attach it to this email before sending.` : "Screenshot selected: none"
+      ].join("\n");
+      const subject = encodeURIComponent("SVGlance feedback");
+      window.location.href = `mailto:alexanderhnj2001@gmail.com?subject=${subject}&body=${encodeURIComponent(body)}`;
     });
   </script>
 </body>

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 - 2026-06-19
+
+- Added a menu-bar "Share Feedback" shortcut that opens the website feedback form.
+- Updated the landing page layout, comparison demo, beta copy, and feedback form.
+- Prepared the DMG packaging flow for a styled installer background.
+
 ## 0.1.2 - 2026-06-17
 
 - Clarified the large-folder scan cap message.

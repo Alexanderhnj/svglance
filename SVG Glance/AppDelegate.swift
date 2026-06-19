@@ -44,6 +44,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private enum ReleaseLinks {
         static let projectURL = URL(string: "https://github.com/Alexanderhnj/svglance")!
         static let privacyURL = URL(string: "https://github.com/Alexanderhnj/svglance/blob/main/PRIVACY.md")!
+        static let feedbackURL = URL(string: "https://svglance.vercel.app/#feedback")!
     }
 
     private var statusItem: NSStatusItem?
@@ -82,6 +83,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 rescanFolders: { [weak self] in self?.rescanApprovedFolders(trigger: .manual) },
                 manageFolders: { [weak self] in self?.showApprovedFoldersWindow() },
                 resetFolders: { [weak self] in self?.confirmResetApprovedFolders() },
+                shareFeedback: { [weak self] in self?.openFeedbackPage() },
                 showAbout: { [weak self] in self?.showAboutWindow() }
             )
         )
@@ -309,6 +311,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         aboutWindow = controller
         controller.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func openFeedbackPage() {
+        NSWorkspace.shared.open(ReleaseLinks.feedbackURL)
+        appState.statusText = "Opened the SVGlance feedback form."
     }
 
     private func confirmResetApprovedFolders() {
