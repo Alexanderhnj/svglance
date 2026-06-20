@@ -55,7 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private enum ReleaseLinks {
         static let projectURL = URL(string: "https://github.com/Alexanderhnj/svglance")!
         static let privacyURL = URL(string: "https://github.com/Alexanderhnj/svglance/blob/main/PRIVACY.md")!
-        static let feedbackURL = URL(string: "https://svglance.vercel.app/#feedback")!
+        static let feedbackURL = URL(string: "mailto:alexanderhnj2001@gmail.com?subject=SVGlance%20feedback")!
         static let latestReleaseURL = URL(string: "https://github.com/Alexanderhnj/svglance/releases/latest")!
         static let latestDMGURL = URL(string: "https://github.com/Alexanderhnj/svglance/releases/latest/download/SVGlance.dmg")!
         static let latestReleaseAPIURL = URL(string: "https://api.github.com/repos/Alexanderhnj/svglance/releases/latest")!
@@ -331,7 +331,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func openFeedbackPage() {
         NSWorkspace.shared.open(ReleaseLinks.feedbackURL)
-        appState.statusText = "Opened the SVGlance feedback form."
+        appState.statusText = "Opened an email draft for SVGlance feedback."
     }
 
     private func checkForUpdatesIfNeeded() {

@@ -595,55 +595,6 @@
       line-height: 1.4;
     }
 
-    .feedback-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .field {
-      display: grid;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .field--wide {
-      grid-column: 1 / -1;
-    }
-
-    .field label {
-      color: var(--soft-ink);
-      font-size: 12px;
-      font-weight: 740;
-    }
-
-    .field input,
-    .field textarea {
-      width: 100%;
-      min-width: 0;
-      border: 1px solid rgba(20, 21, 24, 0.14);
-      border-radius: 10px;
-      background: #ffffff;
-      color: var(--ink);
-      font: inherit;
-      font-size: 14px;
-      line-height: 1.35;
-      padding: 10px 11px;
-      outline: none;
-    }
-
-    .field input:focus,
-    .field textarea:focus {
-      border-color: rgba(233, 121, 36, 0.55);
-      box-shadow: 0 0 0 3px rgba(233, 121, 36, 0.12);
-    }
-
-    .field textarea {
-      min-height: 82px;
-      resize: vertical;
-    }
-
     .feedback-actions {
       display: flex;
       align-items: center;
@@ -747,10 +698,6 @@
         grid-template-columns: repeat(3, minmax(70px, 1fr));
         gap: 13px;
         padding-top: 32px;
-      }
-
-      .feedback-grid {
-        grid-template-columns: 1fr;
       }
 
       .feedback-actions {
@@ -859,32 +806,14 @@
             <input id="comparison-slider" class="slider" type="range" min="1" max="99" value="54" aria-label="Compare SVG previews before and after SVGlance">
           </div>
         </div>
-        <form class="feedback-card" id="feedback" aria-label="Send feedback">
+        <div class="feedback-card" id="feedback">
           <h2>Report a bug or suggest an improvement</h2>
-          <p>Share what happened, what you expected, and any screenshot that helps explain it. The form opens an email draft so you can review it before sending.</p>
-          <div class="feedback-grid">
-            <div class="field">
-              <label for="feedback-name">Name</label>
-              <input id="feedback-name" name="name" autocomplete="name" placeholder="Your name">
-            </div>
-            <div class="field">
-              <label for="feedback-email">Email</label>
-              <input id="feedback-email" name="email" type="email" autocomplete="email" placeholder="you@example.com">
-            </div>
-            <div class="field field--wide">
-              <label for="feedback-message">Bug or suggestion</label>
-              <textarea id="feedback-message" name="message" required placeholder="Tell me what you found or what would make SVGlance better."></textarea>
-            </div>
-            <div class="field field--wide">
-              <label for="feedback-attachment">Screenshot attachment</label>
-              <input id="feedback-attachment" name="attachment" type="file" accept="image/*,.pdf">
-            </div>
-          </div>
+          <p>Open an email draft and describe what happened. You can attach screenshots directly in your mail app.</p>
           <div class="feedback-actions">
-            <button class="button secondary" type="submit">Open email draft</button>
-            <span class="feedback-note">Browser security prevents auto-attaching files to email drafts. If you choose a screenshot, attach it after your email app opens.</span>
+            <a class="button secondary" href="mailto:alexanderhnj2001@gmail.com?subject=SVGlance%20feedback">Report a bug</a>
+            <span class="feedback-note">Feedback opens in your own email app, so nothing is submitted through this website.</span>
           </div>
-        </form>
+        </div>
       </div>
       <div class="device" aria-hidden="true">
         <img class="app-icon" src="assets/app-icon.png" width="512" height="512" alt="">
@@ -898,27 +827,6 @@
 
     slider?.addEventListener("input", (event) => {
       comparison.style.setProperty("--split", `${event.target.value}%`);
-    });
-
-    const feedbackForm = document.querySelector("#feedback");
-    feedbackForm?.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const form = new FormData(feedbackForm);
-      const name = String(form.get("name") || "").trim();
-      const email = String(form.get("email") || "").trim();
-      const message = String(form.get("message") || "").trim();
-      const attachment = feedbackForm.querySelector("#feedback-attachment")?.files?.[0]?.name;
-      const body = [
-        `Name: ${name || "Not provided"}`,
-        `Email: ${email || "Not provided"}`,
-        "",
-        "Feedback:",
-        message || "Not provided",
-        "",
-        attachment ? `Screenshot selected: ${attachment}. Please attach it to this email before sending.` : "Screenshot selected: none"
-      ].join("\n");
-      const subject = encodeURIComponent("SVGlance feedback");
-      window.location.href = `mailto:alexanderhnj2001@gmail.com?subject=${subject}&body=${encodeURIComponent(body)}`;
     });
 
     document.querySelectorAll("[data-download-link]").forEach((link) => {
