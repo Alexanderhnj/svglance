@@ -572,42 +572,6 @@
       opacity: 0;
     }
 
-    .feedback-card {
-      margin-top: 26px;
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.74);
-      box-shadow: 0 16px 36px rgba(20, 21, 24, 0.08);
-    }
-
-    .feedback-card h2 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.2;
-      letter-spacing: 0;
-    }
-
-    .feedback-card p {
-      margin: 7px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.4;
-    }
-
-    .feedback-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .feedback-note {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.35;
-    }
-
     .device {
       display: grid;
       gap: 22px;
@@ -700,10 +664,6 @@
         padding-top: 32px;
       }
 
-      .feedback-actions {
-        align-items: stretch;
-        flex-direction: column;
-      }
     }
 
     @media (max-width: 520px) {
@@ -760,6 +720,7 @@
             <a href="https://github.com/Alexanderhnj">GitHub</a>
             <a href="https://x.com/TheDevDesign">X</a>
             <a href="https://github.com/Alexanderhnj/svglance/blob/main/PRIVACY.md">Privacy</a>
+            <a href="mailto:alexanderhnj2001@gmail.com?subject=SVGlance%20feedback" title="Report a bug by email">Report a bug</a>
           </nav>
         </div>
         <div class="comparison" id="comparison">
@@ -804,14 +765,6 @@
             <span class="split-handle" aria-hidden="true"></span>
             <label class="sr-only" for="comparison-slider">Compare SVG previews before and after SVGlance</label>
             <input id="comparison-slider" class="slider" type="range" min="1" max="99" value="54" aria-label="Compare SVG previews before and after SVGlance">
-          </div>
-        </div>
-        <div class="feedback-card" id="feedback">
-          <h2>Report a bug or suggest an improvement</h2>
-          <p>Open an email draft and describe what happened. You can attach screenshots directly in your mail app.</p>
-          <div class="feedback-actions">
-            <a class="button secondary" href="mailto:alexanderhnj2001@gmail.com?subject=SVGlance%20feedback">Report a bug</a>
-            <span class="feedback-note">Feedback opens in your own email app, so nothing is submitted through this website.</span>
           </div>
         </div>
       </div>
