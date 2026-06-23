@@ -3,9 +3,56 @@ import CoreServices
 import SwiftUI
 import UniformTypeIdentifiers
 
+enum SVGlanceScanState {
+    case idle
+    case scanning(folderName: String, processed: Int, totalKnown: Int?)
+    case finished(successes: Int, total: Int, folderName: String, didHitLimit: Bool)
+    case failed(folderName: String, message: String)
+
+    var isScanning: Bool {
+        if case .scanning = self {
+            return true
+        }
+
+        return false
+    }
+
+    var message: String? {
+        switch self {
+        case .idle:
+            return nil
+        case .scanning(let folderName, let processed, _):
+            return "Indexing \(folderName)... \(processed) SVG\(processed == 1 ? "" : "s") updated so far."
+        case .finished(let successes, let total, let folderName, let didHitLimit):
+            if total == 0 {
+                return "No SVG files found in \(folderName)."
+            }
+
+            let base = successes == total
+                ? "Updated \(successes) SVG icon\(successes == 1 ? "" : "s") in \(folderName)."
+                : "Updated \(successes) of \(total) SVG icons in \(folderName)."
+
+            return didHitLimit
+                ? "\(base) Some subfolders were skipped to keep SVGlance fast."
+                : base
+        case .failed(let folderName, let message):
+            return "Could not index \(folderName): \(message)"
+        }
+    }
+}
+
 final class SVGlanceAppState: ObservableObject {
-    @Published var statusText = "Ready. Use Open SVG for a correct preview, or apply Finder icons to make white SVGs visible on the Desktop."
+    @Published var statusText = "Approve a folder to update SVG Finder icons automatically."
+    @Published var scanState: SVGlanceScanState = .idle
     @Published var approvedFolders: [SVGlanceApprovedFolder] = []
+
+    var isScanning: Bool {
+        scanState.isScanning
+    }
+
+    var visibleStatusText: String {
+        scanState.message ?? statusText
+    }
 
     var approvedFolderSummary: String {
         switch approvedFolders.count {
@@ -45,7 +92,7 @@ private struct GitHubRelease: Decodable {
     }
 }
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private enum DefaultsKey {
         static let automaticIconFolderBookmark = "SVGlanceAutomaticIconFolderBookmark"
         static let didShowFolderOnboarding = "SVGlanceDidShowFolderOnboarding"
@@ -70,6 +117,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var folderWatchers: [String: SVGlanceFolderWatcher] = [:]
     private var pendingFolderScans: [String: DispatchWorkItem] = [:]
     private var currentIconScan: SVGlanceIconScanCancellation?
+    private var globalEventMonitor: Any?
+    private var localEventMonitor: Any?
+    private var appResignObserver: NSObjectProtocol?
     private let iconProcessingQueue = DispatchQueue(label: "com.svglance.icon-processing", qos: .utility)
 
     private enum ScanLimit {
@@ -84,20 +134,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         registerSVGViewerHandlers()
 
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 400, height: 520)
+        popover.delegate = self
+        popover.contentSize = NSSize(width: 360, height: 280)
         popover.contentViewController = NSHostingController(
             rootView: StatusPopoverView(
                 state: appState,
-                openSVG: { [weak self] in self?.chooseSVGToOpen() },
-                applyIcons: { [weak self] in self?.chooseSVGsForIconApplication() },
-                clearIcons: { [weak self] in self?.chooseSVGsForIconClearing() },
-                addDesktop: { [weak self] in self?.approveStandardFolder(.desktopDirectory) },
-                addDownloads: { [weak self] in self?.approveStandardFolder(.downloadsDirectory) },
                 addFolder: { [weak self] in self?.chooseFolderToApprove() },
-                rescanFolders: { [weak self] in self?.rescanApprovedFolders(trigger: .manual) },
+                setDefaultViewer: { [weak self] in self?.setAsDefaultSVGViewer() },
                 manageFolders: { [weak self] in self?.showApprovedFoldersWindow() },
-                resetFolders: { [weak self] in self?.confirmResetApprovedFolders() },
-                checkForUpdates: { [weak self] in self?.checkForUpdates(userInitiated: true) },
                 shareFeedback: { [weak self] in self?.openFeedbackPage() },
                 showAbout: { [weak self] in self?.showAboutWindow() }
             )
@@ -133,6 +177,72 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             popover.performClose(nil)
         } else {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            startPopoverMonitoring()
+        }
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        stopPopoverMonitoring()
+    }
+
+    private func startPopoverMonitoring() {
+        stopPopoverMonitoring()
+
+        globalEventMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]
+        ) { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.popover.performClose(nil)
+            }
+        }
+
+        localEventMonitor = NSEvent.addLocalMonitorForEvents(
+            matching: [.keyDown, .leftMouseDown, .rightMouseDown, .otherMouseDown]
+        ) { [weak self] event in
+            guard let self else {
+                return event
+            }
+
+            if event.type == .keyDown {
+                guard event.keyCode == 53 else {
+                    return event
+                }
+
+                self.popover.performClose(nil)
+                return nil
+            }
+
+            if event.window !== self.popover.contentViewController?.view.window,
+               event.window !== self.statusItem?.button?.window {
+                self.popover.performClose(nil)
+            }
+
+            return event
+        }
+
+        appResignObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didResignActiveNotification,
+            object: NSApp,
+            queue: .main
+        ) { [weak self] _ in
+            self?.popover.performClose(nil)
+        }
+    }
+
+    private func stopPopoverMonitoring() {
+        if let globalEventMonitor {
+            NSEvent.removeMonitor(globalEventMonitor)
+            self.globalEventMonitor = nil
+        }
+
+        if let localEventMonitor {
+            NSEvent.removeMonitor(localEventMonitor)
+            self.localEventMonitor = nil
+        }
+
+        if let appResignObserver {
+            NotificationCenter.default.removeObserver(appResignObserver)
+            self.appResignObserver = nil
         }
     }
 
@@ -193,19 +303,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         alert.messageText = "Choose folders for SVG icons"
         alert.informativeText = "SVGlance can update existing SVGs and watch for new ones in folders you approve. Folder access stays local to this Mac; SVGlance does not collect or upload your files."
         alert.addButton(withTitle: "Choose Folder...")
-        alert.addButton(withTitle: "Desktop")
-        alert.addButton(withTitle: "Downloads")
         alert.addButton(withTitle: "Later")
 
         switch alert.runModal() {
         case .alertFirstButtonReturn:
             chooseFolderToApprove()
-        case .alertSecondButtonReturn:
-            approveStandardFolder(.desktopDirectory)
-        case .alertThirdButtonReturn:
-            approveStandardFolder(.downloadsDirectory)
         default:
-            appState.statusText = "You can approve folders from the SVGlance menu bar icon anytime."
+            setStatus("You can approve folders from the SVGlance menu bar icon anytime.")
         }
     }
 
@@ -232,7 +336,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func approveStandardFolder(_ directory: FileManager.SearchPathDirectory) {
         guard let url = FileManager.default.urls(for: directory, in: .userDomainMask).first else {
-            appState.statusText = "Could not find that folder."
+            setStatus("Could not find that folder.")
             return
         }
 
@@ -245,10 +349,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func approveFolders(_ urls: [URL], scanImmediately: Bool) {
         var approvedCount = 0
         var failedCount = 0
+        var approvedURLs: [URL] = []
 
         for url in urls {
             if SVGlanceViewerFolderAccess.saveAccess(to: url) {
                 approvedCount += 1
+                approvedURLs.append(url)
             } else {
                 failedCount += 1
             }
@@ -257,14 +363,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         refreshApprovedFolderStatus()
         refreshWatchedFolders()
 
-        if scanImmediately {
-            rescanApprovedFolders(trigger: .approval)
+        if scanImmediately, !approvedURLs.isEmpty {
+            rescanApprovedFolders(approvedURLs, trigger: .approval)
         } else if approvedCount > 0 {
-            appState.statusText = "Approved \(approvedCount) folder\(approvedCount == 1 ? "" : "s")."
+            setStatus("Approved \(approvedCount) folder\(approvedCount == 1 ? "" : "s").")
         }
 
-        if failedCount > 0 {
-            appState.statusText = "Approved \(approvedCount) folder\(approvedCount == 1 ? "" : "s"); \(failedCount) failed."
+        if failedCount > 0, approvedURLs.isEmpty {
+            setStatus("Approved \(approvedCount) folder\(approvedCount == 1 ? "" : "s"); \(failedCount) failed.")
         }
     }
 
@@ -331,7 +437,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func openFeedbackPage() {
         NSWorkspace.shared.open(ReleaseLinks.feedbackURL)
-        appState.statusText = "Opened an email draft for SVGlance feedback."
+        setStatus("Opened an email draft for SVGlance feedback.")
+    }
+
+    private func setAsDefaultSVGViewer() {
+        if registerSVGViewerHandlers() {
+            setStatus("SVGlance is set to open SVG files.")
+        } else {
+            setStatus("Could not set SVGlance as the default SVG viewer.")
+        }
+    }
+
+    private func setStatus(_ text: String) {
+        appState.scanState = .idle
+        appState.statusText = text
     }
 
     private func checkForUpdatesIfNeeded() {
@@ -345,7 +464,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func checkForUpdates(userInitiated: Bool) {
         if userInitiated {
-            appState.statusText = "Checking for SVGlance updates..."
+            setStatus("Checking for SVGlance updates...")
         }
 
         var request = URLRequest(url: ReleaseLinks.latestReleaseAPIURL)
@@ -394,7 +513,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         guard compareVersions(latestVersion, currentVersion) == .orderedDescending else {
             if userInitiated {
-                appState.statusText = "SVGlance is up to date."
+                setStatus("SVGlance is up to date.")
                 let alert = NSAlert()
                 alert.messageText = "SVGlance is up to date"
                 alert.informativeText = "You are running version \(currentVersion)."
@@ -404,7 +523,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        appState.statusText = "SVGlance \(latestVersion) is available."
+        setStatus("SVGlance \(latestVersion) is available.")
 
         let alert = NSAlert()
         alert.messageText = "SVGlance \(latestVersion) is available"
@@ -424,7 +543,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func showUpdateCheckFailed(message: String) {
-        appState.statusText = "Could not check for updates."
+        setStatus("Could not check for updates.")
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = "Could not check for updates"
@@ -482,7 +601,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         SVGlanceViewerFolderAccess.removeAllAccess()
         UserDefaults.standard.removeObject(forKey: DefaultsKey.automaticIconFolderBookmark)
         refreshApprovedFolderStatus()
-        appState.statusText = "Forgot all approved folders. You can approve folders again anytime."
+        setStatus("Forgot all approved folders. You can approve folders again anytime.")
     }
 
     private func removeApprovedFolders(withIDs ids: Set<String>) {
@@ -493,7 +612,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         refreshApprovedFolderStatus()
         refreshWatchedFolders()
-        appState.statusText = ids.isEmpty ? "No approved folders selected." : "Removed \(ids.count) approved folder\(ids.count == 1 ? "" : "s")."
+        setStatus(ids.isEmpty ? "No approved folders selected." : "Removed \(ids.count) approved folder\(ids.count == 1 ? "" : "s").")
     }
 
     private func openSVGViewer(for url: URL) {
@@ -505,7 +624,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         viewerWindows.append(controller)
         controller.window?.delegate = self
         controller.show()
-        appState.statusText = "Opened \(url.lastPathComponent) in SVGlance."
+        setStatus("Opened \(url.lastPathComponent) in SVGlance.")
     }
 
     private func applyFinderIcons(from urls: [URL]) {
@@ -530,14 +649,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let folders = approvedIconFolders()
         guard !folders.isEmpty else {
             if trigger == .manual {
-                appState.statusText = "Approve a folder first."
+                setStatus("Approve a folder first.")
             }
             return
         }
 
+        rescanApprovedFolders(folders, trigger: trigger)
+    }
+
+    private func rescanApprovedFolders(_ folders: [URL], trigger: FolderScanTrigger) {
         let cancellation = startNewIconScan()
-        let folderNames = folders.map(\.lastPathComponent).joined(separator: ", ")
-        appState.statusText = "Scanning \(folderNames) in the background..."
+        let folderName = scanDisplayName(for: folders)
+        appState.scanState = .scanning(folderName: folderName, processed: 0, totalKnown: nil)
 
         iconProcessingQueue.async { [weak self] in
             guard let self else {
@@ -553,11 +676,49 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     return
                 }
 
+                let currentFolderName = folder.lastPathComponent.isEmpty ? folder.path : folder.lastPathComponent
                 SVGlanceViewerFolderAccess.performWithAccess(to: folder) {
+                    let topLevelScan = self.topLevelSVGFiles(in: folder, maxSVGs: ScanLimit.maxSVGsPerFolder)
+                    let topLevelFiles = topLevelScan.urls
+                    totalFiles += topLevelFiles.count
+                    didHitLimit = didHitLimit || topLevelScan.didHitFileLimit
+                    self.publishScanProgress(
+                        cancellation: cancellation,
+                        folderName: currentFolderName,
+                        processed: totalSuccesses,
+                        totalKnown: topLevelFiles.isEmpty ? nil : totalFiles
+                    )
+
+                    for url in topLevelFiles {
+                        if cancellation.isCancelled {
+                            return
+                        }
+
+                        autoreleasepool {
+                            if SVGIconRenderer.applyIcon(to: url, size: 512) {
+                                totalSuccesses += 1
+                            }
+                        }
+
+                        self.publishScanProgress(
+                            cancellation: cancellation,
+                            folderName: currentFolderName,
+                            processed: totalSuccesses,
+                            totalKnown: totalFiles
+                        )
+                    }
+
+                    let remainingBudget = max(0, ScanLimit.maxSVGsPerFolder - topLevelFiles.count)
+                    guard remainingBudget > 0 else {
+                        didHitLimit = didHitLimit || !topLevelFiles.isEmpty
+                        return
+                    }
+
                     let scan = self.svgFiles(
                         in: folder,
+                        skippingTopLevelIn: folder,
                         maxEntries: ScanLimit.maxEntriesPerFolder,
-                        maxSVGs: ScanLimit.maxSVGsPerFolder,
+                        maxSVGs: remainingBudget,
                         cancellation: cancellation
                     )
                     totalFiles += scan.urls.count
@@ -573,6 +734,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                 totalSuccesses += 1
                             }
                         }
+
+                        self.publishScanProgress(
+                            cancellation: cancellation,
+                            folderName: currentFolderName,
+                            processed: totalSuccesses,
+                            totalKnown: nil
+                        )
                     }
                 }
             }
@@ -584,16 +752,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
                 self.currentIconScan = nil
                 self.refreshApprovedFolderStatus()
+                self.refreshFinderIcons(in: folders)
 
-                if totalFiles == 0 {
-                    self.appState.statusText = "No SVG files found in approved folders."
-                    return
-                }
-
-                let limitNote = didHitLimit ? " Scan was capped to keep SVGlance responsive; choose a more specific folder if some SVGs were skipped." : ""
-                self.appState.statusText = "Updated \(totalSuccesses) of \(totalFiles) SVG Finder icon\(totalFiles == 1 ? "" : "s").\(limitNote)"
+                self.appState.scanState = .finished(
+                    successes: totalSuccesses,
+                    total: totalFiles,
+                    folderName: folderName,
+                    didHitLimit: didHitLimit
+                )
             }
         }
+    }
+
+    private func publishScanProgress(
+        cancellation: SVGlanceIconScanCancellation,
+        folderName: String,
+        processed: Int,
+        totalKnown: Int?
+    ) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.currentIconScan === cancellation, !cancellation.isCancelled else {
+                return
+            }
+
+            self.appState.scanState = .scanning(folderName: folderName, processed: processed, totalKnown: totalKnown)
+        }
+    }
+
+    private func scanDisplayName(for folders: [URL]) -> String {
+        if folders.count == 1, let folder = folders.first {
+            return folder.lastPathComponent.isEmpty ? folder.path : folder.lastPathComponent
+        }
+
+        return "\(folders.count) folders"
     }
 
     private func refreshApprovedFolderStatus() {
@@ -672,7 +863,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func processSelectedSVGs(from urls: [URL], actionName: String, operation: @escaping (URL) -> Bool) {
         let cancellation = startNewIconScan()
-        appState.statusText = "\(actionName) SVG icons in the background..."
+        setStatus("\(actionName) SVG icons in the background...")
 
         iconProcessingQueue.async { [weak self] in
             guard let self else {
@@ -689,7 +880,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         return
                     }
                     self?.currentIconScan = nil
-                    self?.appState.statusText = "No SVG files were selected."
+                    self?.setStatus("No SVG files were selected.")
                 }
                 return
             }
@@ -721,9 +912,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
 
                 self.currentIconScan = nil
-                self.appState.statusText = failures == 0
+                self.setStatus(failures == 0
                     ? "\(actionName) visible Finder icons for \(successes) SVG file\(successes == 1 ? "" : "s")."
-                    : "\(actionName) \(successes) icon\(successes == 1 ? "" : "s"); \(failures) failed."
+                    : "\(actionName) \(successes) icon\(successes == 1 ? "" : "s"); \(failures) failed.")
             }
         }
     }
@@ -741,8 +932,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let didHitFileLimit: Bool
     }
 
+    private func topLevelSVGFiles(in folder: URL, maxSVGs: Int) -> SVGFolderScan {
+        guard let urls = try? FileManager.default.contentsOfDirectory(
+            at: folder,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return SVGFolderScan(urls: [], didHitEntryLimit: false, didHitFileLimit: false)
+        }
+
+        let svgFiles = urls.filter { url in
+            guard url.pathExtension.lowercased() == "svg" else {
+                return false
+            }
+
+            let values = try? url.resourceValues(forKeys: [.isRegularFileKey])
+            return values?.isRegularFile ?? true
+        }
+        .sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
+
+        return SVGFolderScan(
+            urls: Array(svgFiles.prefix(maxSVGs)),
+            didHitEntryLimit: false,
+            didHitFileLimit: svgFiles.count > maxSVGs
+        )
+    }
+
     private func svgFiles(
         in folder: URL,
+        skippingTopLevelIn topLevelFolder: URL? = nil,
         maxEntries: Int = .max,
         maxSVGs: Int = .max,
         cancellation: SVGlanceIconScanCancellation? = nil
@@ -785,6 +1003,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 continue
             }
 
+            if let topLevelFolder,
+               url.deletingLastPathComponent().standardizedFileURL.path == topLevelFolder.standardizedFileURL.path {
+                continue
+            }
+
             results.append(url)
             if results.count >= maxSVGs {
                 didHitFileLimit = true
@@ -798,9 +1021,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return SVGFolderScan(urls: sorted, didHitEntryLimit: didHitEntryLimit, didHitFileLimit: didHitFileLimit)
     }
 
-    private func registerSVGViewerHandlers() {
+    @discardableResult
+    private func registerSVGViewerHandlers() -> Bool {
         guard let bundleIdentifier = Bundle.main.bundleIdentifier as CFString? else {
-            return
+            return false
         }
 
         let contentTypes: [CFString] = [
@@ -808,9 +1032,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             "public.svg-image" as CFString
         ]
 
+        var didRegister = true
         for contentType in contentTypes {
-            LSSetDefaultRoleHandlerForContentType(contentType, .viewer, bundleIdentifier)
+            didRegister = LSSetDefaultRoleHandlerForContentType(contentType, .viewer, bundleIdentifier) == noErr && didRegister
         }
+
+        return didRegister
     }
 
     @objc private func refreshWatchedFolders() {
@@ -870,7 +1097,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let path = folder.standardizedFileURL.path
         pendingFolderScans[path] = nil
 
-        rescanApprovedFolders(trigger: .watcher)
+        rescanApprovedFolders([folder], trigger: .watcher)
+    }
+
+    private func refreshFinderIcons(in folders: [URL]) {
+        for folder in folders {
+            NSWorkspace.shared.noteFileSystemChanged(folder.path)
+        }
     }
 }
 

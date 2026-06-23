@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.5 - 2026-06-23
+
+- Simplified the menu bar popover around approving folders and setting SVGlance as the SVG viewer.
+- Added visible indexing progress and clearer finished/empty/limited scan messages.
+- Updated approved-folder scans to process top-level SVG files first before best-effort subfolder indexing.
+- Limited watcher refreshes to the changed folder and refreshed Finder after custom icon updates.
+- Made the popover close when clicking outside the app or pressing Escape.
+- Redesigned the direct SVG viewer with a full-size titlebar, collapsible material sidebar, floating SF Symbol controls, and transparent PNG export without preview-only chrome.
+
 ## 0.1.4 - 2026-06-19
 
 - Added a lightweight GitHub Releases update checker in the menu bar app.

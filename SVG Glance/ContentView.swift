@@ -3,21 +3,14 @@ import SwiftUI
 
 struct StatusPopoverView: View {
     @ObservedObject var state: SVGlanceAppState
-    let openSVG: () -> Void
-    let applyIcons: () -> Void
-    let clearIcons: () -> Void
-    let addDesktop: () -> Void
-    let addDownloads: () -> Void
     let addFolder: () -> Void
-    let rescanFolders: () -> Void
+    let setDefaultViewer: () -> Void
     let manageFolders: () -> Void
-    let resetFolders: () -> Void
-    let checkForUpdates: () -> Void
     let shareFeedback: () -> Void
     let showAbout: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
                 Image(systemName: "eye")
                     .font(.title2)
@@ -26,7 +19,7 @@ struct StatusPopoverView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("SVGlance")
                         .font(.headline)
-                    Text("SVG viewer and Finder icon fixer")
+                    Text("Folder-based SVG icon fixer")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -35,78 +28,38 @@ struct StatusPopoverView: View {
             Divider()
 
             HStack(alignment: .top, spacing: 8) {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-                Text(state.statusText)
+                if state.isScanning {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                }
+
+                Text(state.visibleStatusText)
                     .font(.callout)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            VStack(spacing: 8) {
-                Button(action: openSVG) {
-                    Label("Open SVG...", systemImage: "doc.viewfinder")
-                        .frame(maxWidth: .infinity)
-                }
-
-                Button(action: applyIcons) {
-                    Label("Apply Finder Icons...", systemImage: "square.grid.2x2")
-                        .frame(maxWidth: .infinity)
-                }
-
-                Button(action: clearIcons) {
-                    Label("Clear Finder Icons...", systemImage: "xmark.square")
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            .buttonStyle(.bordered)
-
-            Divider()
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Approved Folders")
-                    .font(.headline)
-
+            VStack(alignment: .leading, spacing: 10) {
                 Text(state.approvedFolderSummary)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
 
-                Text("Approved folders are scanned and watched locally. SVGlance does not upload or collect file data.")
+                Text("Approve a folder once. SVGlance updates SVG Finder icons locally and watches for new SVG files.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                HStack(spacing: 8) {
-                    Button(action: addDesktop) {
-                        Label("Desktop", systemImage: "desktopcomputer")
-                            .frame(maxWidth: .infinity)
-                    }
-
-                    Button(action: addDownloads) {
-                        Label("Downloads", systemImage: "arrow.down.circle")
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-
                 Button(action: addFolder) {
-                    Label("Choose Folder...", systemImage: "folder.badge.plus")
+                    Label("Approve Folder...", systemImage: "folder.badge.plus")
                         .frame(maxWidth: .infinity)
                 }
+                .disabled(state.isScanning)
 
-                HStack(spacing: 8) {
-                    Button(action: rescanFolders) {
-                        Label("Rescan", systemImage: "arrow.clockwise")
-                            .frame(maxWidth: .infinity)
-                    }
-
-                    Button(action: manageFolders) {
-                        Label("Manage...", systemImage: "list.bullet.rectangle")
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-
-                Button(action: resetFolders) {
-                    Label("Forget All Approved Folders", systemImage: "lock.slash")
+                Button(action: setDefaultViewer) {
+                    Label("Set as Default SVG Viewer", systemImage: "checkmark.rectangle")
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -115,9 +68,9 @@ struct StatusPopoverView: View {
             Divider()
 
             HStack {
-                Button("About SVGlance", action: showAbout)
-                Button("Check for Updates", action: checkForUpdates)
-                Button("Share Feedback", action: shareFeedback)
+                Button("Manage", action: manageFolders)
+                Button("About", action: showAbout)
+                Button("Feedback", action: shareFeedback)
 
                 Spacer()
 
@@ -127,7 +80,7 @@ struct StatusPopoverView: View {
             }
         }
         .padding(18)
-        .frame(width: 400)
+        .frame(width: 360)
     }
 }
 
@@ -247,16 +200,9 @@ struct ApprovedFoldersView: View {
 #Preview {
     StatusPopoverView(
         state: SVGlanceAppState(),
-        openSVG: {},
-        applyIcons: {},
-        clearIcons: {},
-        addDesktop: {},
-        addDownloads: {},
         addFolder: {},
-        rescanFolders: {},
+        setDefaultViewer: {},
         manageFolders: {},
-        resetFolders: {},
-        checkForUpdates: {},
         shareFeedback: {},
         showAbout: {}
     )

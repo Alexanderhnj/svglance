@@ -1,25 +1,36 @@
 import AppKit
+import UniformTypeIdentifiers
 
 final class SVGViewerWindowController: NSWindowController {
     private var currentURL: URL
     private var folderSVGs: [URL] = []
+    private var isSidebarVisible = true
 
     private let canvasView = SVGCanvasView(frame: .zero)
+    private let sidebarContainer = NSVisualEffectView()
     private let tableView = NSTableView(frame: .zero)
     private let metadataText = NSTextField(wrappingLabelWithString: "")
+    private let folderSummaryLabel = NSTextField(labelWithString: "")
+    private let titleLabel = NSTextField(labelWithString: "")
     private let zoomLabel = NSTextField(labelWithString: "100%")
     private let rotationLabel = NSTextField(labelWithString: "0 deg")
+    private var sidebarWidthConstraint: NSLayoutConstraint?
+    private weak var sidebarToggleButton: NSButton?
 
     init(url: URL) {
         currentURL = url
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 1120, height: 760),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
         window.title = url.lastPathComponent
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true
+        window.minSize = NSSize(width: 760, height: 520)
 
         super.init(window: window)
         window.contentView = makeContentView()
@@ -40,78 +51,135 @@ final class SVGViewerWindowController: NSWindowController {
     }
 
     private func makeContentView() -> NSView {
-        let toolbar = makeToolbar()
-
         let sidebar = makeSidebar()
-        sidebar.translatesAutoresizingMaskIntoConstraints = false
         canvasView.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        let container = NSView()
-        container.addSubview(toolbar)
+        let container = NSVisualEffectView()
+        container.material = .underWindowBackground
+        container.blendingMode = .behindWindow
+        container.state = .active
+        container.wantsLayer = true
         container.addSubview(sidebar)
         container.addSubview(canvasView)
+        container.addSubview(titleLabel)
+
+        let controlBar = makeFloatingControlBar()
+        container.addSubview(controlBar)
+
+        let widthConstraint = sidebar.widthAnchor.constraint(equalToConstant: 300)
+        sidebarWidthConstraint = widthConstraint
+
+        titleLabel.font = .systemFont(ofSize: 13, weight: .semibold)
+        titleLabel.textColor = .labelColor
+        titleLabel.lineBreakMode = .byTruncatingMiddle
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         NSLayoutConstraint.activate([
-            toolbar.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            toolbar.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            toolbar.topAnchor.constraint(equalTo: container.topAnchor),
-            toolbar.heightAnchor.constraint(equalToConstant: 46),
-
             sidebar.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            sidebar.topAnchor.constraint(equalTo: toolbar.bottomAnchor),
+            sidebar.topAnchor.constraint(equalTo: container.topAnchor),
             sidebar.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            sidebar.widthAnchor.constraint(equalToConstant: 280),
+            widthConstraint,
 
             canvasView.leadingAnchor.constraint(equalTo: sidebar.trailingAnchor),
             canvasView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            canvasView.topAnchor.constraint(equalTo: toolbar.bottomAnchor),
-            canvasView.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+            canvasView.topAnchor.constraint(equalTo: container.topAnchor),
+            canvasView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+
+            titleLabel.leadingAnchor.constraint(equalTo: canvasView.leadingAnchor, constant: 24),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: controlBar.leadingAnchor, constant: -16),
+            titleLabel.centerYAnchor.constraint(equalTo: controlBar.centerYAnchor),
+
+            controlBar.topAnchor.constraint(equalTo: container.topAnchor, constant: 16),
+            controlBar.centerXAnchor.constraint(equalTo: canvasView.centerXAnchor)
         ])
 
         return container
     }
 
-    private func makeToolbar() -> NSView {
+    private func makeFloatingControlBar() -> NSView {
+        let material = NSVisualEffectView()
+        material.material = .hudWindow
+        material.blendingMode = .withinWindow
+        material.state = .active
+        material.wantsLayer = true
+        material.translatesAutoresizingMaskIntoConstraints = false
+        material.layer?.cornerRadius = 16
+        material.layer?.borderWidth = 0.5
+        material.layer?.borderColor = NSColor.white.withAlphaComponent(0.35).cgColor
+        material.layer?.shadowColor = NSColor.black.cgColor
+        material.layer?.shadowOpacity = 0.18
+        material.layer?.shadowRadius = 18
+        material.layer?.shadowOffset = NSSize(width: 0, height: -6)
+
         let stack = NSStackView()
         stack.orientation = .horizontal
         stack.alignment = .centerY
-        stack.spacing = 8
-        stack.edgeInsets = NSEdgeInsets(top: 7, left: 12, bottom: 7, right: 12)
+        stack.spacing = 6
+        stack.edgeInsets = NSEdgeInsets(top: 7, left: 8, bottom: 7, right: 8)
         stack.translatesAutoresizingMaskIntoConstraints = false
 
-        stack.addArrangedSubview(button(title: "−", toolTip: "Zoom out", action: #selector(zoomOut)))
+        let toggle = iconButton(symbol: "sidebar.leading", fallbackTitle: "Sidebar", toolTip: "Show or hide the sidebar", action: #selector(toggleSidebar))
+        sidebarToggleButton = toggle
+        stack.addArrangedSubview(toggle)
+        stack.addArrangedSubview(separator())
+        stack.addArrangedSubview(iconButton(symbol: "minus.magnifyingglass", fallbackTitle: "-", toolTip: "Zoom out", action: #selector(zoomOut)))
         stack.addArrangedSubview(zoomLabel)
-        stack.addArrangedSubview(button(title: "+", toolTip: "Zoom in", action: #selector(zoomIn)))
+        stack.addArrangedSubview(iconButton(symbol: "plus.magnifyingglass", fallbackTitle: "+", toolTip: "Zoom in", action: #selector(zoomIn)))
         stack.addArrangedSubview(separator())
-        stack.addArrangedSubview(button(title: "↺", toolTip: "Rotate left", action: #selector(rotateLeft)))
+        stack.addArrangedSubview(iconButton(symbol: "rotate.left", fallbackTitle: "Left", toolTip: "Rotate left", action: #selector(rotateLeft)))
         stack.addArrangedSubview(rotationLabel)
-        stack.addArrangedSubview(button(title: "↻", toolTip: "Rotate right", action: #selector(rotateRight)))
+        stack.addArrangedSubview(iconButton(symbol: "rotate.right", fallbackTitle: "Right", toolTip: "Rotate right", action: #selector(rotateRight)))
         stack.addArrangedSubview(separator())
-        stack.addArrangedSubview(button(title: "Reset", toolTip: "Reset zoom and rotation", action: #selector(resetView)))
-        stack.addArrangedSubview(button(title: "Save PNG...", toolTip: "Save the current visual view as a PNG", action: #selector(savePNG)))
+        stack.addArrangedSubview(iconButton(symbol: "arrow.counterclockwise", fallbackTitle: "Reset", toolTip: "Reset zoom and rotation", action: #selector(resetView)))
+        stack.addArrangedSubview(iconButton(symbol: "square.and.arrow.down", fallbackTitle: "PNG", toolTip: "Export transparent PNG", action: #selector(savePNG)))
 
-        let spacer = NSView()
-        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        stack.addArrangedSubview(spacer)
+        material.addSubview(stack)
 
         zoomLabel.alignment = .center
+        zoomLabel.font = .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
+        zoomLabel.textColor = .labelColor
         zoomLabel.widthAnchor.constraint(equalToConstant: 52).isActive = true
         rotationLabel.alignment = .center
+        rotationLabel.font = .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
+        rotationLabel.textColor = .secondaryLabelColor
         rotationLabel.widthAnchor.constraint(equalToConstant: 62).isActive = true
 
-        return stack
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: material.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: material.trailingAnchor),
+            stack.topAnchor.constraint(equalTo: material.topAnchor),
+            stack.bottomAnchor.constraint(equalTo: material.bottomAnchor)
+        ])
+
+        return material
     }
 
     private func makeSidebar() -> NSView {
+        sidebarContainer.material = .sidebar
+        sidebarContainer.blendingMode = .withinWindow
+        sidebarContainer.state = .active
+        sidebarContainer.translatesAutoresizingMaskIntoConstraints = false
+        sidebarContainer.wantsLayer = true
+        sidebarContainer.layer?.masksToBounds = true
+        sidebarContainer.layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.5).cgColor
+        sidebarContainer.layer?.borderWidth = 0.5
+
         let stack = NSStackView()
         stack.orientation = .vertical
-        stack.spacing = 10
-        stack.edgeInsets = NSEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+        stack.spacing = 12
+        stack.edgeInsets = NSEdgeInsets(top: 58, left: 16, bottom: 16, right: 14)
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         let title = NSTextField(labelWithString: "Folder SVGs")
-        title.font = .systemFont(ofSize: 13, weight: .semibold)
+        title.font = .systemFont(ofSize: 17, weight: .semibold)
+        title.textColor = .labelColor
         stack.addArrangedSubview(title)
+
+        folderSummaryLabel.font = .systemFont(ofSize: 12)
+        folderSummaryLabel.textColor = .secondaryLabelColor
+        folderSummaryLabel.lineBreakMode = .byTruncatingMiddle
+        stack.addArrangedSubview(folderSummaryLabel)
 
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("name"))
         column.title = "Name"
@@ -122,68 +190,112 @@ final class SVGViewerWindowController: NSWindowController {
         tableView.target = self
         tableView.doubleAction = #selector(openSelectedSVG)
         tableView.usesAlternatingRowBackgroundColors = false
+        tableView.backgroundColor = .clear
+        tableView.selectionHighlightStyle = .regular
+        tableView.rowHeight = 30
+        tableView.intercellSpacing = NSSize(width: 0, height: 2)
 
         let scrollView = NSScrollView()
         scrollView.documentView = tableView
         scrollView.hasVerticalScroller = true
-        scrollView.borderType = .bezelBorder
+        scrollView.scrollerStyle = .overlay
+        scrollView.drawsBackground = false
+        scrollView.borderType = .noBorder
         scrollView.heightAnchor.constraint(greaterThanOrEqualToConstant: 240).isActive = true
         stack.addArrangedSubview(scrollView)
 
-        let metadataTitle = NSTextField(labelWithString: "Metadata")
-        metadataTitle.font = .systemFont(ofSize: 13, weight: .semibold)
-        stack.addArrangedSubview(metadataTitle)
+        let metadataPanel = NSVisualEffectView()
+        metadataPanel.material = .popover
+        metadataPanel.blendingMode = .withinWindow
+        metadataPanel.state = .active
+        metadataPanel.wantsLayer = true
+        metadataPanel.layer?.cornerRadius = 12
+        metadataPanel.layer?.borderWidth = 0.5
+        metadataPanel.layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.45).cgColor
+        metadataPanel.translatesAutoresizingMaskIntoConstraints = false
 
+        let metadataStack = NSStackView()
+        metadataStack.orientation = .vertical
+        metadataStack.spacing = 7
+        metadataStack.edgeInsets = NSEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+        metadataStack.translatesAutoresizingMaskIntoConstraints = false
+
+        let metadataTitle = NSTextField(labelWithString: "Metadata")
+        metadataTitle.font = .systemFont(ofSize: 12, weight: .semibold)
+        metadataTitle.textColor = .labelColor
+        metadataStack.addArrangedSubview(metadataTitle)
         metadataText.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
         metadataText.textColor = .secondaryLabelColor
-        stack.addArrangedSubview(metadataText)
+        metadataText.lineBreakMode = .byTruncatingMiddle
+        metadataStack.addArrangedSubview(metadataText)
+        metadataPanel.addSubview(metadataStack)
+        stack.addArrangedSubview(metadataPanel)
 
-        let container = NSView()
-        container.addSubview(stack)
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            stack.topAnchor.constraint(equalTo: container.topAnchor),
-            stack.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+            metadataStack.leadingAnchor.constraint(equalTo: metadataPanel.leadingAnchor),
+            metadataStack.trailingAnchor.constraint(equalTo: metadataPanel.trailingAnchor),
+            metadataStack.topAnchor.constraint(equalTo: metadataPanel.topAnchor),
+            metadataStack.bottomAnchor.constraint(equalTo: metadataPanel.bottomAnchor)
         ])
-        return container
+
+        sidebarContainer.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: sidebarContainer.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: sidebarContainer.trailingAnchor),
+            stack.topAnchor.constraint(equalTo: sidebarContainer.topAnchor),
+            stack.bottomAnchor.constraint(equalTo: sidebarContainer.bottomAnchor)
+        ])
+        return sidebarContainer
     }
 
-    private func button(title: String, toolTip: String, action: Selector) -> NSButton {
-        let button = NSButton(title: title, target: self, action: action)
-        button.bezelStyle = .rounded
+    private func iconButton(symbol: String, fallbackTitle: String, toolTip: String, action: Selector) -> NSButton {
+        let image = NSImage(systemSymbolName: symbol, accessibilityDescription: toolTip)
+        let button = NSButton(title: image == nil ? fallbackTitle : "", target: self, action: action)
+        if let image {
+            button.image = image
+            button.imagePosition = .imageOnly
+        }
+        button.bezelStyle = .texturedRounded
+        button.isBordered = false
+        button.contentTintColor = .labelColor
         button.toolTip = toolTip
+        button.setButtonType(.momentaryChange)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            button.widthAnchor.constraint(equalToConstant: 32),
+            button.heightAnchor.constraint(equalToConstant: 30)
+        ])
         return button
     }
 
     private func separator() -> NSView {
         let separator = NSBox()
         separator.boxType = .separator
+        separator.translatesAutoresizingMaskIntoConstraints = false
         separator.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        separator.heightAnchor.constraint(equalToConstant: 18).isActive = true
         return separator
     }
 
     private func reloadFolderList() {
         let folder = currentURL.deletingLastPathComponent()
-        guard let enumerator = FileManager.default.enumerator(
+        let urls = (try? FileManager.default.contentsOfDirectory(
             at: folder,
             includingPropertiesForKeys: [.isRegularFileKey],
             options: [.skipsHiddenFiles, .skipsPackageDescendants]
-        ) else {
-            folderSVGs = [currentURL]
-            tableView.reloadData()
-            return
-        }
+        )) ?? [currentURL]
 
-        folderSVGs = enumerator.compactMap { item in
-            guard let url = item as? URL, url.pathExtension.lowercased() == "svg" else {
-                return nil
+        folderSVGs = urls.filter { url in
+            guard url.pathExtension.lowercased() == "svg" else {
+                return false
             }
-            return url
+            let values = try? url.resourceValues(forKeys: [.isRegularFileKey])
+            return values?.isRegularFile ?? true
         }
         .sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
 
         tableView.reloadData()
+        folderSummaryLabel.stringValue = "\(folder.lastPathComponent.isEmpty ? folder.path : folder.lastPathComponent) - \(folderSVGs.count) SVG\(folderSVGs.count == 1 ? "" : "s")"
         if let selectedIndex = folderSVGs.firstIndex(of: currentURL) {
             tableView.selectRowIndexes(IndexSet(integer: selectedIndex), byExtendingSelection: false)
             tableView.scrollRowToVisible(selectedIndex)
@@ -193,6 +305,7 @@ final class SVGViewerWindowController: NSWindowController {
     private func load(_ url: URL) {
         currentURL = url
         window?.title = url.lastPathComponent
+        titleLabel.stringValue = url.lastPathComponent
 
         let didAccess = url.startAccessingSecurityScopedResource()
         defer {
@@ -246,6 +359,29 @@ final class SVGViewerWindowController: NSWindowController {
     private func updateControlLabels() {
         zoomLabel.stringValue = "\(Int((canvasView.zoom * 100).rounded()))%"
         rotationLabel.stringValue = "\(Int(canvasView.rotationDegrees.rounded())) deg"
+    }
+
+    @objc private func toggleSidebar() {
+        isSidebarVisible.toggle()
+        sidebarContainer.isHidden = false
+        sidebarToggleButton?.contentTintColor = isSidebarVisible ? .controlAccentColor : .secondaryLabelColor
+
+        NSAnimationContext.runAnimationGroup { [weak self] context in
+            guard let self else {
+                return
+            }
+
+            context.duration = 0.22
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            self.sidebarWidthConstraint?.animator().constant = self.isSidebarVisible ? 300 : 0
+            self.sidebarContainer.animator().alphaValue = self.isSidebarVisible ? 1 : 0
+            self.window?.contentView?.layoutSubtreeIfNeeded()
+        } completionHandler: { [weak self] in
+            guard let self else {
+                return
+            }
+            self.sidebarContainer.isHidden = !self.isSidebarVisible
+        }
     }
 
     @objc private func openSelectedSVG() {
@@ -367,6 +503,8 @@ extension SVGViewerWindowController: NSTableViewDataSource, NSTableViewDelegate 
         }
 
         cell.textField?.stringValue = folderSVGs[row].lastPathComponent
+        cell.textField?.font = .systemFont(ofSize: 12.5)
+        cell.textField?.lineBreakMode = .byTruncatingMiddle
         return cell
     }
 
@@ -446,7 +584,7 @@ private final class SVGCanvasView: NSView {
         NSGraphicsContext.current?.cgContext.clear(NSRect(origin: .zero, size: bounds.size))
 
         if case .image(let image) = renderState {
-            draw(image: image, in: NSRect(origin: .zero, size: bounds.size))
+            draw(image: image, in: NSRect(origin: .zero, size: bounds.size), includePreviewShadow: false)
         }
 
         NSGraphicsContext.restoreGraphicsState()
@@ -460,13 +598,13 @@ private final class SVGCanvasView: NSView {
 
         switch renderState {
         case .image(let image):
-            draw(image: image, in: bounds)
+            draw(image: image, in: bounds, includePreviewShadow: true)
         case .message(let message):
             draw(message: message, in: bounds)
         }
     }
 
-    private func draw(image: NSImage, in rect: NSRect) {
+    private func draw(image: NSImage, in rect: NSRect, includePreviewShadow: Bool) {
         let target = aspectFitRect(for: image.size, in: rect)
 
         NSGraphicsContext.saveGraphicsState()
@@ -482,11 +620,13 @@ private final class SVGCanvasView: NSView {
             height: target.height
         )
 
-        let shadow = NSShadow()
-        shadow.shadowOffset = NSSize(width: 0, height: -2)
-        shadow.shadowBlurRadius = 12
-        shadow.shadowColor = NSColor(calibratedWhite: 0, alpha: 0.34)
-        shadow.set()
+        if includePreviewShadow {
+            let shadow = NSShadow()
+            shadow.shadowOffset = NSSize(width: 0, height: -2)
+            shadow.shadowBlurRadius = 12
+            shadow.shadowColor = NSColor(calibratedWhite: 0, alpha: 0.28)
+            shadow.set()
+        }
         image.draw(in: transformedTarget, from: .zero, operation: .sourceOver, fraction: 1)
         NSGraphicsContext.restoreGraphicsState()
     }

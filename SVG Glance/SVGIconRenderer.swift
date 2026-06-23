@@ -23,11 +23,21 @@ enum SVGIconRenderer {
             return false
         }
 
-        return NSWorkspace.shared.setIcon(icon, forFile: url.path, options: [])
+        let didSetIcon = NSWorkspace.shared.setIcon(icon, forFile: url.path, options: [])
+        if didSetIcon {
+            NSWorkspace.shared.noteFileSystemChanged(url.path)
+        }
+
+        return didSetIcon
     }
 
     static func clearIcon(for url: URL) -> Bool {
-        NSWorkspace.shared.setIcon(nil, forFile: url.path, options: [])
+        let didClearIcon = NSWorkspace.shared.setIcon(nil, forFile: url.path, options: [])
+        if didClearIcon {
+            NSWorkspace.shared.noteFileSystemChanged(url.path)
+        }
+
+        return didClearIcon
     }
 
     private static func fallbackIcon(message: String, size: CGFloat) -> NSImage {
